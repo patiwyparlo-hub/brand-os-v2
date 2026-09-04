@@ -36,6 +36,34 @@
   font-family: "Inter", -apple-system, system-ui, sans-serif;
   background: linear-gradient(#060607 0%, #0b0b0e 46%, #131318 78%, #17161a 100%);
   overflow: hidden;
+  transition: background 220ms ease;
+}
+
+.studio.light {
+  --bg-base: #f7f7f5;
+  --bg-raised: #ffffff;
+  --bg-elevated: #ffffff;
+  --line-faint: #ececea;
+  --line: #e2e2df;
+  --line-strong: #d0d0cc;
+  --ink: #0a0a0b;
+  --ink-secondary: #4a4a47;
+  --ink-tertiary: #78786f;
+  --ink-faint: #a4a49c;
+  --accent-hover: #e0590c;
+  --accent-muted: rgba(250, 102, 15, 0.08);
+  --glass-bg: rgba(10, 10, 11, 0.03);
+  --glass-bg-hover: rgba(10, 10, 11, 0.06);
+  --glass-pane: rgba(255, 255, 255, 0.75);
+  --glass-pane-heavy: rgba(255, 255, 255, 0.9);
+  --glass-line: rgba(10, 10, 11, 0.08);
+  --glass-line-faint: rgba(10, 10, 11, 0.05);
+
+  background: linear-gradient(#fcfcfa 0%, #f7f7f4 55%, #f0efe9 100%);
+}
+
+.studio.light .topbar {
+  background: rgba(255, 255, 255, 0.55);
 }
 
 /* ---------- shared top bar ---------- */
@@ -84,6 +112,31 @@
   height: 6px;
   border-radius: 999px;
   background: #34d399;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--glass-pane);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out);
+}
+
+.themeToggle:hover {
+  color: var(--ink);
+  border-color: var(--accent-edge);
 }
 
 /* ---------- loading step ---------- */

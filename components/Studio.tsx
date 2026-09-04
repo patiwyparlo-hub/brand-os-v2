@@ -5,6 +5,7 @@ import { toPng } from "html-to-image";
 import CreateScreen from "./CreateScreen";
 import type { FormatId } from "./formats";
 import styles from "./Studio.module.css";
+import { useContentTheme } from "./useContentTheme";
 
 type Step = "brief" | "loading" | "directions" | "editor";
 type Theme = "white" | "dark" | "orange";
@@ -92,6 +93,8 @@ export default function Studio() {
   const frameRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [frameSize, setFrameSize] = useState({ width: 480, height: 480 });
+  const [contentTheme, toggleContentTheme] = useContentTheme();
+  const isLight = contentTheme === "world";
 
   const design = history[histIndex];
 
@@ -107,14 +110,13 @@ export default function Studio() {
     const stage = stageRef.current;
     if (!stage || step !== "editor") return;
 
-    const STAGE_PADDING = 64;
-    const MAX_WIDTH = 560;
+    const STAGE_PADDING = 32;
 
     function fit() {
       const availW = Math.max(120, stage!.clientWidth - STAGE_PADDING);
       const availH = Math.max(120, stage!.clientHeight - STAGE_PADDING);
       const ratio = formatMeta.aspect;
-      let width = Math.min(MAX_WIDTH, availW, availH * ratio);
+      let width = Math.min(availW, availH * ratio);
       let height = width / ratio;
       if (height > availH) {
         height = availH;
@@ -211,12 +213,19 @@ export default function Studio() {
   }
 
   if (step === "brief") {
-    return <CreateScreen onCreate={startFromBrief} onSkip={skipToEditor} />;
+    return (
+      <CreateScreen
+        onCreate={startFromBrief}
+        onSkip={skipToEditor}
+        theme={contentTheme}
+        onToggleTheme={toggleContentTheme}
+      />
+    );
   }
 
   if (step === "loading") {
     return (
-      <div className={styles.studio}>
+      <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
         <div className={styles.topbar}>
           <div className={styles.brand}>
             <span>Strategy</span>
@@ -224,9 +233,12 @@ export default function Studio() {
               Brand <em>OS</em>
             </span>
           </div>
-          <div className={styles.badge}>
-            <span className={styles.badgeDot} />
-            Internal Preview
+          <div className={styles.headerRight}>
+            <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
+            <div className={styles.badge}>
+              <span className={styles.badgeDot} />
+              Internal Preview
+            </div>
           </div>
         </div>
         <div className={styles.loadingWrap}>
@@ -243,22 +255,25 @@ export default function Studio() {
 
   if (step === "directions") {
     return (
-      <div className={styles.studio}>
+      <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
         <div className={styles.topbar}>
           <button type="button" className={styles.btnGhostSm} onClick={() => setStep("brief")}>
             ← Back to brief
           </button>
           <div style={{ fontSize: 13, color: "var(--ink-secondary)" }}>Choose a direction to continue</div>
-          <button
-            type="button"
-            className={styles.btnGhostSm}
-            onClick={() => {
-              setStep("loading");
-              window.setTimeout(() => setStep("directions"), 1000);
-            }}
-          >
-            ↻ Regenerate
-          </button>
+          <div className={styles.headerRight}>
+            <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
+            <button
+              type="button"
+              className={styles.btnGhostSm}
+              onClick={() => {
+                setStep("loading");
+                window.setTimeout(() => setStep("directions"), 1000);
+              }}
+            >
+              ↻ Regenerate
+            </button>
+          </div>
         </div>
         <div className={styles.directionsBody}>
           <div className={styles.directionsGrid}>
@@ -297,7 +312,7 @@ export default function Studio() {
 
   // editor
   return (
-    <div className={styles.studio}>
+    <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
       <div className={styles.topbar}>
         <div className={styles.brand}>
           <span>Strategy</span>
@@ -314,6 +329,7 @@ export default function Studio() {
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
           <button type="button" className={styles.btnGhostSm} onClick={() => setRightOpen((v) => !v)}>
             ⋮
           </button>
@@ -552,5 +568,28 @@ export default function Studio() {
 
       {toast && <div className={styles.toast}>{toast}</div>}
     </div>
+  );
+}
+
+function ThemeToggleBtn({ isLight, onToggle }: { isLight: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      className={styles.themeToggle}
+      onClick={onToggle}
+      title={isLight ? "Switch to dark mode" : "Switch to light mode"}
+      aria-label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+    >
+      {isLight ? (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.5 14.5A8.5 8.5 0 019.5 3.5a8.5 8.5 0 1011 11z" />
+        </svg>
+      ) : (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="4.5" />
+          <path d="M12 2.5v2.5M12 19v2.5M4.5 12H2M22 12h-2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8" />
+        </svg>
+      )}
+    </button>
   );
 }

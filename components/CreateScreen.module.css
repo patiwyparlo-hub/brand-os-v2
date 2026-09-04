@@ -25,6 +25,37 @@
   font-family: "Inter", -apple-system, system-ui, sans-serif;
   background: linear-gradient(#060607 0%, #0b0b0e 46%, #131318 78%, #17161a 100%);
   overflow: hidden;
+  transition: background 220ms ease;
+}
+
+.page.light {
+  --bg-base: #f7f7f5;
+  --bg-raised: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-input: #ffffff;
+  --line-faint: #ececea;
+  --line: #e2e2df;
+  --line-strong: #d0d0cc;
+  --ink: #0a0a0b;
+  --ink-secondary: #4a4a47;
+  --ink-tertiary: #78786f;
+  --ink-faint: #a4a49c;
+  --accent-hover: #e0590c;
+  --accent-muted: rgba(250, 102, 15, 0.08);
+  --glass-pane: rgba(255, 255, 255, 0.72);
+  --glass-line: rgba(10, 10, 11, 0.08);
+
+  background: linear-gradient(#fcfcfa 0%, #f7f7f4 55%, #f0efe9 100%);
+}
+
+.page.light .grid {
+  background-image: linear-gradient(#0a0a0b 1px, transparent 1px), linear-gradient(90deg, #0a0a0b 1px, transparent 1px);
+  opacity: 0.035;
+}
+
+.page.light .scrim {
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.2) 45%, rgba(255, 255, 255, 0) 78%);
 }
 
 .layer {
@@ -79,6 +110,31 @@
 .brandProduct em {
   color: var(--accent);
   font-style: normal;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--glass-pane);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out), background 180ms var(--ease-out);
+}
+
+.themeToggle:hover {
+  color: var(--ink);
+  border-color: var(--accent-edge);
 }
 
 .badge {

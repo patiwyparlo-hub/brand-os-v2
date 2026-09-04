@@ -3,21 +3,32 @@
 import { useState } from "react";
 import styles from "./CreateScreen.module.css";
 import { FORMATS, type FormatId } from "./formats";
+import { useContentTheme, type ContentTheme } from "./useContentTheme";
 
 export default function CreateScreen({
   onCreate,
   onSkip,
+  theme,
+  onToggleTheme,
 }: {
   onCreate?: (brief: string, visual: string, format: FormatId) => void;
   onSkip?: (format: FormatId) => void;
+  /** Optional: pass the shared theme down so it stays in sync with a parent
+   * (e.g. Studio). If omitted, this component manages its own. */
+  theme?: ContentTheme;
+  onToggleTheme?: () => void;
 }) {
   const [brief, setBrief] = useState("");
   const [visual, setVisual] = useState("");
   const [visualOpen, setVisualOpen] = useState(false);
   const [format, setFormat] = useState<FormatId>("square");
+  const [ownTheme, toggleOwnTheme] = useContentTheme();
+  const contentTheme = theme ?? ownTheme;
+  const toggleContentTheme = onToggleTheme ?? toggleOwnTheme;
+  const isLight = contentTheme === "world";
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${isLight ? styles.light : ""}`}>
       <div className={`${styles.layer} ${styles.glow}`} />
       <div className={`${styles.layer} ${styles.grid}`} />
       <div className={`${styles.layer} ${styles.scrim}`} />
@@ -29,9 +40,20 @@ export default function CreateScreen({
             Brand <em>OS</em>
           </span>
         </div>
-        <div className={styles.badge}>
-          <span className={styles.badgeDot} />
-          Internal Preview
+        <div className={styles.headerRight}>
+          <button
+            type="button"
+            className={styles.themeToggle}
+            onClick={toggleContentTheme}
+            title={isLight ? "Switch to dark mode" : "Switch to light mode"}
+            aria-label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+          >
+            {isLight ? <MoonIcon /> : <SunIcon />}
+          </button>
+          <div className={styles.badge}>
+            <span className={styles.badgeDot} />
+            Internal Preview
+          </div>
         </div>
       </header>
 
@@ -124,6 +146,23 @@ export default function CreateScreen({
 
       <footer className={styles.footer}>Strategy · Brand OS · Internal Preview</footer>
     </div>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4.5" />
+      <path d="M12 2.5v2.5M12 19v2.5M4.5 12H2M22 12h-2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.5 14.5A8.5 8.5 0 019.5 3.5a8.5 8.5 0 1011 11z" />
+    </svg>
   );
 }
 
