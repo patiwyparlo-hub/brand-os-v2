@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import CreateScreen from "./CreateScreen";
 import type { FormatId } from "./formats";
@@ -11,13 +11,13 @@ type Theme = "white" | "dark" | "orange";
 type Layout = "statement" | "keystats" | "benefits" | "cardgrid" | "textimage";
 type EditorFormat = "square" | "landscape" | "wide" | "story" | "banner" | "docs";
 
-const EDITOR_FORMATS: { id: EditorFormat; name: string; ratio: string; aspect: string }[] = [
-  { id: "square", name: "Square", ratio: "1:1", aspect: "1 / 1" },
-  { id: "landscape", name: "Landscape", ratio: "1.91:1", aspect: "1.91 / 1" },
-  { id: "wide", name: "Wide", ratio: "16:9", aspect: "16 / 9" },
-  { id: "story", name: "Story", ratio: "9:16", aspect: "9 / 16" },
-  { id: "banner", name: "Banner", ratio: "4:1", aspect: "4 / 1" },
-  { id: "docs", name: "Docs", ratio: "A4", aspect: "1 / 1.414" },
+const EDITOR_FORMATS: { id: EditorFormat; name: string; ratio: string; aspect: number }[] = [
+  { id: "square", name: "Square", ratio: "1:1", aspect: 1 / 1 },
+  { id: "landscape", name: "Landscape", ratio: "1.91:1", aspect: 1.91 / 1 },
+  { id: "wide", name: "Wide", ratio: "16:9", aspect: 16 / 9 },
+  { id: "story", name: "Story", ratio: "9:16", aspect: 9 / 16 },
+  { id: "banner", name: "Banner", ratio: "4:1", aspect: 4 / 1 },
+  { id: "docs", name: "Docs", ratio: "A4", aspect: 1 / 1.414 },
 ];
 
 const LAYOUTS: { id: Layout; name: string; icon: string }[] = [
@@ -90,8 +90,44 @@ export default function Studio() {
   const [imgMode, setImgMode] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [frameSize, setFrameSize] = useState({ width: 480, height: 480 });
 
   const design = history[histIndex];
+
+  const formatMeta = useMemo(
+    () => EDITOR_FORMATS.find((f) => f.id === design?.format) ?? EDITOR_FORMATS[0],
+    [design]
+  );
+
+  // Fit the canvas to the stage's actual space (like object-fit: contain) so
+  // extreme ratios (Story, Banner, Docs) shrink instead of overflowing — the
+  // canvas's real pixel width then drives the cqw-based text sizing inside it.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || step !== "editor") return;
+
+    const STAGE_PADDING = 64;
+    const MAX_WIDTH = 560;
+
+    function fit() {
+      const availW = Math.max(120, stage!.clientWidth - STAGE_PADDING);
+      const availH = Math.max(120, stage!.clientHeight - STAGE_PADDING);
+      const ratio = formatMeta.aspect;
+      let width = Math.min(MAX_WIDTH, availW, availH * ratio);
+      let height = width / ratio;
+      if (height > availH) {
+        height = availH;
+        width = height * ratio;
+      }
+      setFrameSize({ width: Math.round(width), height: Math.round(height) });
+    }
+
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(stage);
+    return () => ro.disconnect();
+  }, [step, formatMeta.aspect]);
 
   function startFromBrief(text: string, _visual: string, format: FormatId) {
     setBrief(text);
@@ -173,11 +209,6 @@ export default function Studio() {
       showToast("Export failed — try again.");
     }
   }
-
-  const formatMeta = useMemo(
-    () => EDITOR_FORMATS.find((f) => f.id === design?.format) ?? EDITOR_FORMATS[0],
-    [design]
-  );
 
   if (step === "brief") {
     return <CreateScreen onCreate={startFromBrief} onSkip={skipToEditor} />;
@@ -358,13 +389,19 @@ export default function Studio() {
           <div className={styles.sideMenuFooter}>💡 Design tips appear here</div>
         </div>
 
-        <div className={styles.stage}>
+        <div className={styles.stage} ref={stageRef}>
           <div
             ref={frameRef}
             className={`${styles.frame} ${
               design.theme === "white" ? styles.frameThemeWhite : design.theme === "dark" ? styles.frameThemeDark : styles.frameThemeOrange
             }`}
-            style={{ aspectRatio: formatMeta.aspect, containerType: "inline-size" } as React.CSSProperties}
+            style={
+              {
+                width: frameSize.width,
+                height: frameSize.height,
+                containerType: "inline-size",
+              } as React.CSSProperties
+            }
           >
             <div className={styles.logoMark}>Strategy</div>
             <div className={styles.frameMain}>

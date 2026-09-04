@@ -408,11 +408,11 @@
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
   overflow: hidden;
   border-radius: 4px;
-  width: min(560px, 100%);
-  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   padding: 7%;
+  transition: width var(--dur-base) var(--ease-out), height var(--dur-base) var(--ease-out);
 }
 
 .frameThemeWhite { background: #ffffff; }
@@ -445,7 +445,6 @@
   font-weight: 500;
   line-height: 1.06;
   letter-spacing: -0.02em;
-  font-size: clamp(20px, 6.5%, 40px);
   font-size: 7cqw;
   outline: none;
   border-radius: 4px;
