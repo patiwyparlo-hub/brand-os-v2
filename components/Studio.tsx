@@ -1,0 +1,519 @@
+"use client";
+
+import { useMemo, useRef, useState } from "react";
+import { toPng } from "html-to-image";
+import CreateScreen from "./CreateScreen";
+import type { FormatId } from "./formats";
+import styles from "./Studio.module.css";
+
+type Step = "brief" | "loading" | "directions" | "editor";
+type Theme = "white" | "dark" | "orange";
+type Layout = "statement" | "keystats" | "benefits" | "cardgrid" | "textimage";
+type EditorFormat = "square" | "landscape" | "wide" | "story" | "banner" | "docs";
+
+const EDITOR_FORMATS: { id: EditorFormat; name: string; ratio: string; aspect: string }[] = [
+  { id: "square", name: "Square", ratio: "1:1", aspect: "1 / 1" },
+  { id: "landscape", name: "Landscape", ratio: "1.91:1", aspect: "1.91 / 1" },
+  { id: "wide", name: "Wide", ratio: "16:9", aspect: "16 / 9" },
+  { id: "story", name: "Story", ratio: "9:16", aspect: "9 / 16" },
+  { id: "banner", name: "Banner", ratio: "4:1", aspect: "4 / 1" },
+  { id: "docs", name: "Docs", ratio: "A4", aspect: "1 / 1.414" },
+];
+
+const LAYOUTS: { id: Layout; name: string; icon: string }[] = [
+  { id: "statement", name: "Statement", icon: "𝗧" },
+  { id: "keystats", name: "Key stats", icon: "📊" },
+  { id: "benefits", name: "Benefits", icon: "✓" },
+  { id: "cardgrid", name: "Card grid", icon: "▦" },
+  { id: "textimage", name: "Text + image", icon: "▤" },
+];
+
+type DesignState = {
+  format: EditorFormat;
+  theme: Theme;
+  layout: Layout;
+  titleInk: string;
+  titleAccent: string;
+  sub: string;
+  cta: string;
+  url: string;
+  stats: { v: string; l: string }[];
+  benefits: string[];
+  cards: { v: string; l: string }[];
+  body: string;
+};
+
+function defaultDesign(format: EditorFormat, brief: string): DesignState {
+  const hasBrief = brief.trim().length > 0;
+  return {
+    format,
+    theme: "white",
+    layout: "statement",
+    titleInk: hasBrief ? "" : "Make something ",
+    titleAccent: hasBrief ? brief.trim() : "on brand",
+    sub: "Click any element to edit it. Or describe what you want below. Everything stays on brand.",
+    cta: "Learn More",
+    url: "software.strategy.com",
+    stats: [
+      { v: "250+", l: "Projects delivered" },
+      { v: "98%", l: "Customer satisfaction" },
+      { v: "3x", l: "Faster results" },
+    ],
+    benefits: ["Click to edit any element", "Describe changes in plain words", "Export when you are ready"],
+    cards: [
+      { v: "250+", l: "Projects delivered" },
+      { v: "98%", l: "Customer satisfaction" },
+      { v: "3x", l: "Faster results" },
+      { v: "#1", l: "Category leader" },
+      { v: "24/7", l: "Always available" },
+      { v: "10x", l: "Return on investment" },
+    ],
+    body: "Use this space to describe your product, service or story. Click to edit this text, or ask for a rewrite in plain language.",
+  };
+}
+
+const DIRECTIONS: { id: string; name: string; desc: string; theme: Theme; layout: Layout }[] = [
+  { id: "bold", name: "Bold statement", desc: "Dark canvas, big claim", theme: "dark", layout: "statement" },
+  { id: "minimal", name: "Minimal light", desc: "White canvas, clean type", theme: "white", layout: "statement" },
+  { id: "data", name: "Data-led", desc: "Orange canvas, key stats", theme: "orange", layout: "keystats" },
+  { id: "editorial", name: "Editorial", desc: "Dark canvas, benefits list", theme: "dark", layout: "benefits" },
+];
+
+export default function Studio() {
+  const [step, setStep] = useState<Step>("brief");
+  const [brief, setBrief] = useState("");
+  const [history, setHistory] = useState<DesignState[]>([]);
+  const [histIndex, setHistIndex] = useState(0);
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [imgMode, setImgMode] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  const design = history[histIndex];
+
+  function startFromBrief(text: string, _visual: string, format: FormatId) {
+    setBrief(text);
+    setStep("loading");
+    window.setTimeout(() => setStep("directions"), 1400);
+    const mapped: EditorFormat = format === "document" ? "docs" : format;
+    setHistory([defaultDesign(mapped, text)]);
+    setHistIndex(0);
+  }
+
+  function skipToEditor(format: FormatId) {
+    const mapped: EditorFormat = format === "document" ? "docs" : format;
+    setHistory([defaultDesign(mapped, "")]);
+    setHistIndex(0);
+    setStep("editor");
+  }
+
+  function pickDirection(dir: (typeof DIRECTIONS)[number]) {
+    setHistory((h) => {
+      const base = h[0] ?? defaultDesign("square", brief);
+      return [{ ...base, theme: dir.theme, layout: dir.layout }];
+    });
+    setHistIndex(0);
+    setStep("editor");
+  }
+
+  function commit(patch: Partial<DesignState>) {
+    setHistory((h) => {
+      const next = { ...h[histIndex], ...patch };
+      const truncated = h.slice(0, histIndex + 1);
+      return [...truncated, next];
+    });
+    setHistIndex((i) => i + 1);
+  }
+
+  function undo() {
+    setHistIndex((i) => Math.max(0, i - 1));
+  }
+  function redo() {
+    setHistIndex((i) => Math.min(history.length - 1, i + 1));
+  }
+  function resetDesign() {
+    setHistory((h) => [h[0]]);
+    setHistIndex(0);
+  }
+
+  function showToast(text: string) {
+    setToast(text);
+    window.setTimeout(() => setToast(null), 2600);
+  }
+
+  function sendMessage() {
+    const text = message.trim().toLowerCase();
+    if (!text || !design) return;
+    let handled = false;
+    if (/dark/.test(text)) { commit({ theme: "dark" }); handled = true; }
+    else if (/orange/.test(text)) { commit({ theme: "orange" }); handled = true; }
+    else if (/white|light/.test(text)) { commit({ theme: "white" }); handled = true; }
+    if (/stat/.test(text)) { commit({ layout: "keystats" }); handled = true; }
+    else if (/benefit/.test(text)) { commit({ layout: "benefits" }); handled = true; }
+    else if (/grid|card/.test(text)) { commit({ layout: "cardgrid" }); handled = true; }
+    else if (/image|photo/.test(text)) { commit({ layout: "textimage" }); handled = true; }
+    else if (/statement|headline/.test(text)) { commit({ layout: "statement" }); handled = true; }
+
+    setMessage("");
+    if (handled) showToast("Applied — this preview edits via keywords, live AI isn't connected yet.");
+    else showToast("AI editing isn't connected in this preview. Try the panels, or say “dark”, “stats”, “benefits”, “grid”.");
+  }
+
+  async function exportPng() {
+    if (!frameRef.current) return;
+    try {
+      const dataUrl = await toPng(frameRef.current, { pixelRatio: 2 });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = "brand-os-design.png";
+      a.click();
+    } catch {
+      showToast("Export failed — try again.");
+    }
+  }
+
+  const formatMeta = useMemo(
+    () => EDITOR_FORMATS.find((f) => f.id === design?.format) ?? EDITOR_FORMATS[0],
+    [design]
+  );
+
+  if (step === "brief") {
+    return <CreateScreen onCreate={startFromBrief} onSkip={skipToEditor} />;
+  }
+
+  if (step === "loading") {
+    return (
+      <div className={styles.studio}>
+        <div className={styles.topbar}>
+          <div className={styles.brand}>
+            <span>Strategy</span>
+            <span style={{ color: "var(--ink-tertiary)" }}>
+              Brand <em>OS</em>
+            </span>
+          </div>
+          <div className={styles.badge}>
+            <span className={styles.badgeDot} />
+            Internal Preview
+          </div>
+        </div>
+        <div className={styles.loadingWrap}>
+          <div className={styles.loadingSpark}>✨</div>
+          <div className={styles.loadingTitle}>Creating your directions</div>
+          <p className={styles.loadingSub}>
+            Analyzing your brief and generating four distinct creative concepts tailored to your message.
+          </p>
+          <div className={styles.loadingHint}>Usually takes 10–20 seconds</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "directions") {
+    return (
+      <div className={styles.studio}>
+        <div className={styles.topbar}>
+          <button type="button" className={styles.btnGhostSm} onClick={() => setStep("brief")}>
+            ← Back to brief
+          </button>
+          <div style={{ fontSize: 13, color: "var(--ink-secondary)" }}>Choose a direction to continue</div>
+          <button
+            type="button"
+            className={styles.btnGhostSm}
+            onClick={() => {
+              setStep("loading");
+              window.setTimeout(() => setStep("directions"), 1000);
+            }}
+          >
+            ↻ Regenerate
+          </button>
+        </div>
+        <div className={styles.directionsBody}>
+          <div className={styles.directionsGrid}>
+            {DIRECTIONS.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className={styles.directionCard}
+                onClick={() => pickDirection(d)}
+              >
+                <div
+                  className={styles.directionPreview}
+                  style={{
+                    background:
+                      d.theme === "dark"
+                        ? "linear-gradient(162deg, #121215 0%, #070708 100%)"
+                        : d.theme === "orange"
+                        ? "linear-gradient(#fa660f 0%, #fa660f 56%, #ffffff 100%)"
+                        : "#ffffff",
+                    color: d.theme === "white" ? "#0a0a0b" : d.theme === "orange" ? "#0a0a0b" : "#fff",
+                  }}
+                >
+                  <span>{brief.trim() || "Make something on brand"}</span>
+                </div>
+                <div className={styles.directionMeta}>
+                  <div className={styles.directionName}>{d.name}</div>
+                  <div className={styles.directionDesc}>{d.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // editor
+  return (
+    <div className={styles.studio}>
+      <div className={styles.topbar}>
+        <div className={styles.brand}>
+          <span>Strategy</span>
+          <span style={{ color: "var(--ink-tertiary)" }}>
+            Brand <em>OS</em>
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button type="button" className={styles.btnGhostSm} onClick={() => setLeftOpen((v) => !v)}>
+            ⚙ Design
+          </button>
+          <span style={{ fontSize: 12.5, color: "var(--ink-faint)" }}>
+            {formatMeta.name} · {formatMeta.ratio}
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button type="button" className={styles.btnGhostSm} onClick={() => setRightOpen((v) => !v)}>
+            ⋮
+          </button>
+          <button type="button" className={styles.btnPrimary} onClick={exportPng}>
+            ⬇ Export
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.editorBody}>
+        <div className={`${styles.sideMenu} ${leftOpen ? styles.open : ""}`}>
+          <div className={styles.sideMenuHeader}>
+            <div className={styles.sideMenuTitle}>Design Controls</div>
+            <button type="button" className={styles.sideMenuClose} onClick={() => setLeftOpen(false)}>
+              ✕
+            </button>
+          </div>
+          <div className={styles.sideMenuContent}>
+            <div>
+              <div className={styles.sectionLabel}>Format</div>
+              <div className={styles.cardGrid2}>
+                {EDITOR_FORMATS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={`${styles.smCard} ${design.format === f.id ? styles.active : ""}`}
+                    onClick={() => commit({ format: f.id })}
+                  >
+                    <div className={styles.smCardName}>{f.name}</div>
+                    <div className={styles.smCardDesc}>{f.ratio}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className={styles.sectionLabel}>Theme</div>
+              <div className={styles.cardGrid3}>
+                {(["white", "dark", "orange"] as Theme[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`${styles.smCard} ${design.theme === t ? styles.active : ""}`}
+                    onClick={() => commit({ theme: t })}
+                  >
+                    <span
+                      className={styles.swatch}
+                      style={{ background: t === "white" ? "#fff" : t === "dark" ? "#0a0a0b" : "#fa660f" }}
+                    />
+                    <div className={styles.smCardDesc}>{t[0].toUpperCase() + t.slice(1)}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className={styles.sectionLabel}>Layout</div>
+              <div className={styles.cardGrid2}>
+                {LAYOUTS.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    className={`${styles.smCard} ${design.layout === l.id ? styles.active : ""}`}
+                    onClick={() => commit({ layout: l.id })}
+                  >
+                    <span className={styles.smCardIcon}>{l.icon}</span>
+                    <div className={styles.smCardName}>{l.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className={styles.sideMenuFooter}>💡 Design tips appear here</div>
+        </div>
+
+        <div className={styles.stage}>
+          <div
+            ref={frameRef}
+            className={`${styles.frame} ${
+              design.theme === "white" ? styles.frameThemeWhite : design.theme === "dark" ? styles.frameThemeDark : styles.frameThemeOrange
+            }`}
+            style={{ aspectRatio: formatMeta.aspect, containerType: "inline-size" } as React.CSSProperties}
+          >
+            <div className={styles.logoMark}>Strategy</div>
+            <div className={styles.frameMain}>
+              <div
+                className={`${styles.frameTitle} ${styles.frameInk}`}
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => commit({ titleInk: "", titleAccent: e.currentTarget.textContent || "" })}
+              >
+                {design.titleInk}
+                <span className={styles.frameInk} style={{ color: "var(--accent)" }}>
+                  {design.titleAccent}
+                </span>
+              </div>
+
+              {design.layout === "statement" && (
+                <div
+                  className={styles.frameSub}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => commit({ sub: e.currentTarget.textContent || "" })}
+                >
+                  {design.sub}
+                </div>
+              )}
+
+              {design.layout === "keystats" && (
+                <div className={styles.statsRow}>
+                  {design.stats.map((s, i) => (
+                    <div className={styles.stat} key={i}>
+                      <div className={styles.statValue}>{s.v}</div>
+                      <div className={styles.statLabel}>{s.l}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {design.layout === "benefits" && (
+                <div className={styles.benefits}>
+                  {design.benefits.map((b, i) => (
+                    <div className={styles.benefit} key={i}>
+                      <span className={styles.benefitDot} />
+                      <span>{b}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {design.layout === "cardgrid" && (
+                <div className={styles.gridWrap}>
+                  {design.cards.map((c, i) => (
+                    <div className={styles.gridCard} key={i}>
+                      <span className={styles.gridCardValue}>{c.v}</span>
+                      <span className={styles.gridCardLabel}>{c.l}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {design.layout === "textimage" && (
+                <div className={styles.bodyText}>{design.body}</div>
+              )}
+            </div>
+            <div className={styles.frameFooter}>
+              <span
+                className={styles.ctaBtn}
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => commit({ cta: e.currentTarget.textContent || "" })}
+              >
+                {design.cta}
+              </span>
+              <span
+                className={styles.urlText}
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => commit({ url: e.currentTarget.textContent || "" })}
+              >
+                {design.url}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className={`${styles.sideMenu} ${styles.right} ${rightOpen ? styles.open : ""}`}>
+          <div className={styles.sideMenuHeader}>
+            <div className={styles.sideMenuTitle}>History &amp; State</div>
+            <button type="button" className={styles.sideMenuClose} onClick={() => setRightOpen(false)}>
+              ✕
+            </button>
+          </div>
+          <div className={styles.sideMenuContent}>
+            <div>
+              <div className={styles.sectionLabel}>Save</div>
+              <button type="button" className={styles.sideMenuButton} onClick={() => showToast("Saved (preview only — not persisted).")}>
+                🔖 Save this design
+              </button>
+            </div>
+            <div>
+              <div className={styles.sectionLabel}>Actions</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <button type="button" className={styles.sideMenuButton} onClick={undo} disabled={histIndex === 0}>
+                  ↶ Undo
+                </button>
+                <button type="button" className={styles.sideMenuButton} onClick={redo} disabled={histIndex >= history.length - 1}>
+                  ↷ Redo
+                </button>
+              </div>
+            </div>
+            <button type="button" className={styles.sideMenuButton} onClick={resetDesign}>
+              ⟲ Reset Design
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.composerWrap}>
+        <div className={styles.composer}>
+          <button type="button" className={styles.composerBtn} title="How this works">
+            ?
+          </button>
+          <textarea
+            placeholder="Ask for any change: copy, layout, theme, or an image"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
+            rows={1}
+          />
+          <button
+            type="button"
+            className={`${styles.composerBtn} ${imgMode ? styles.on : ""}`}
+            title="Image prompt mode"
+            onClick={() => setImgMode((v) => !v)}
+          >
+            🖼
+          </button>
+          <button type="button" className={`${styles.composerBtn} ${styles.sendBtn}`} title="Send" onClick={sendMessage}>
+            ↑
+          </button>
+        </div>
+        <div className={styles.composerHint}>One change at a time gets the sharpest results.</div>
+      </div>
+
+      {toast && <div className={styles.toast}>{toast}</div>}
+    </div>
+  );
+}
