@@ -29,7 +29,7 @@
   --dur-slow: 480ms;
 
   position: relative;
-  min-height: 100dvh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   color: var(--ink);
@@ -456,11 +456,17 @@
   min-width: 0;
 }
 
+.stageDoc {
+  align-items: flex-start;
+  justify-content: center;
+}
+
 .frame {
   position: relative;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: 2px;
+  border: 3px solid #0a0a0b;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
@@ -469,21 +475,20 @@
 }
 
 .frameThemeWhite { background: #ffffff; }
-.frameThemeDark { background: linear-gradient(162deg, #121215 0%, #070708 100%); }
-.frameThemeOrange { background: linear-gradient(#fa660f 0%, #fa660f 56%, #ffffff 100%); }
+.frameThemeDark { background: linear-gradient(162deg, #121215 0%, #070708 100%); border-color: #000; }
+.frameThemeOrange { background: linear-gradient(#fa660f 0%, #fa660f 56%, #ffffff 100%); border-color: #000; }
 
 .frameInk { color: #0a0a0b; }
 .frameThemeDark .frameInk, .frameThemeDark .frameSub, .frameThemeDark .statLabel, .frameThemeDark .benefitText, .frameThemeDark .bodyText {
   color: #ffffff;
 }
 
-.logoMark {
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: -0.01em;
-  color: var(--accent);
+.logoImg {
+  display: block;
+  height: 9cqmin;
+  width: auto;
+  align-self: flex-start;
 }
-.frameThemeOrange .logoMark { color: #0a0a0b; }
 
 .frameMain {
   flex: 1;
@@ -492,6 +497,41 @@
   justify-content: center;
   gap: 18px;
   margin-top: 18px;
+}
+
+.frameMainNarrow {
+  max-width: 60%;
+}
+
+/* Banner (ultra-wide): logo top-right, copy anchored top-left instead of
+   vertically centered — centering reads oddly in a short, wide strip. */
+.frameBanner {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 6% 5%;
+}
+
+.frameBanner .logoImg {
+  order: 2;
+  align-self: flex-start;
+  height: 14cqmin;
+}
+
+.frameBanner .frameMain {
+  order: 1;
+  flex: 0 1 auto;
+  justify-content: flex-start;
+  margin-top: 0;
+  max-width: 70%;
+}
+
+.frameBanner .frameFooter {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: 6%;
+  margin-top: 0;
 }
 
 .frameTitle {
@@ -698,6 +738,230 @@
 }
 .btnGhostSm:hover:not(:disabled) { border-color: var(--accent-edge); color: var(--ink); background: var(--glass-bg-hover); }
 .btnGhostSm:disabled { opacity: 0.4; cursor: default; }
+
+/* ---------- Docs canvas (case-study document) ---------- */
+
+.docFrame {
+  background: #ffffff;
+  color: #0a0a0b;
+  border: 3px solid #0a0a0b;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+  font-family: "Inter", -apple-system, system-ui, sans-serif;
+  margin: 0 auto;
+}
+
+.docHeader {
+  background: linear-gradient(#fa660f, #fa660f);
+  padding: 28px 26px 22px;
+  position: relative;
+}
+
+.docHeaderLogo {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  height: 22px;
+  width: auto;
+}
+
+.docHeaderTitle {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  outline: none;
+  max-width: 78%;
+}
+
+.docHeaderTitle strong {
+  font-weight: 700;
+}
+
+.docHeaderSub {
+  margin-top: 10px;
+  color: #0a0a0b;
+  font-size: 12px;
+  line-height: 1.45;
+  outline: none;
+  max-width: 90%;
+}
+
+.docBody {
+  padding: 24px 26px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.docH2 {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: #0a0a0b;
+  margin: 0 0 6px;
+}
+
+.docP {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #2a2a28;
+  outline: none;
+}
+
+.docSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.docStatsBox {
+  background: #f2f2f0;
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.docStatsHeading {
+  font-weight: 700;
+  font-size: 13px;
+  outline: none;
+}
+
+.docStatsRow {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 14px;
+  gap: 8px;
+}
+
+.docStat { display: flex; flex-direction: column; gap: 2px; }
+.docStatValue { color: var(--accent); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.docStatLabel { font-size: 10px; color: #4a4a47; }
+
+.docQuoteBlock {
+  border-left: 2px solid var(--accent);
+  padding-left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.docQuoteName {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.docQuoteName span {
+  color: var(--accent);
+}
+
+.docQuoteRole {
+  font-size: 10.5px;
+  color: #78786f;
+  outline: none;
+}
+
+.docQuoteText {
+  margin-top: 6px;
+  font-size: 12px;
+  font-style: italic;
+  color: #2a2a28;
+  outline: none;
+  line-height: 1.45;
+}
+
+.docUseCases {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+
+.docUseCase {
+  background: #f2f2f0;
+  border-radius: 10px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.docUseCaseIcon { font-size: 16px; color: var(--accent); }
+.docUseCaseTitle { font-weight: 700; font-size: 11.5px; }
+.docUseCaseDesc { font-size: 10px; line-height: 1.4; color: #4a4a47; }
+
+.docFooter {
+  background: #fa660f;
+  padding: 24px 26px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.docFooterLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 62%;
+}
+
+.docFooterHeading {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 18px;
+  outline: none;
+}
+
+.docFooterSub {
+  color: #0a0a0b;
+  font-size: 11.5px;
+  line-height: 1.4;
+  outline: none;
+}
+
+.docFooterCta {
+  align-self: flex-start;
+  margin-top: 6px;
+  background: #0a0a0b;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  outline: none;
+}
+
+.docFooterRight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.docQr {
+  width: 56px;
+  height: 56px;
+  border: 1.5px dashed rgba(10, 10, 11, 0.4);
+  border-radius: 6px;
+  background: rgba(255, 214, 180, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #7a3d0c;
+}
+
+.docFooterUrl {
+  color: #0a0a0b;
+  font-weight: 600;
+  font-size: 10.5px;
+  outline: none;
+}
 
 .toast {
   position: fixed;

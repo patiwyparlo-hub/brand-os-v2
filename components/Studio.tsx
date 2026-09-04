@@ -29,6 +29,14 @@ const LAYOUTS: { id: Layout; name: string; icon: string }[] = [
   { id: "textimage", name: "Text + image", icon: "▤" },
 ];
 
+const LOGO_BY_THEME: Record<Theme, string> = {
+  white: "/brand/strategy-logo-orange.png",
+  dark: "/brand/strategy-logo-orange.png",
+  orange: "/brand/strategy-logo-black.png",
+};
+
+type UseCase = { icon: string; title: string; desc: string };
+
 type DesignState = {
   format: EditorFormat;
   theme: Theme;
@@ -42,6 +50,19 @@ type DesignState = {
   benefits: string[];
   cards: { v: string; l: string }[];
   body: string;
+  // Docs-only fields
+  about: string;
+  statsHeading: string;
+  challenge: string;
+  solution: string;
+  impact: string;
+  quoteName: string;
+  quoteRole: string;
+  quoteText: string;
+  result: string;
+  useCases: UseCase[];
+  closingHeading: string;
+  closingSub: string;
 };
 
 function defaultDesign(format: EditorFormat, brief: string): DesignState {
@@ -70,6 +91,23 @@ function defaultDesign(format: EditorFormat, brief: string): DesignState {
       { v: "10x", l: "Return on investment" },
     ],
     body: "Use this space to describe your product, service or story. Click to edit this text, or ask for a rewrite in plain language.",
+    about:
+      "Introduce your company or product here. Explain what you do and who you serve in a few clear sentences. Click any text to edit it, or ask for a rewrite.",
+    statsHeading: "Success by the Numbers",
+    challenge: "Describe the problem your customer faced before working with you. What was slow, costly or unclear about the old way of doing things.",
+    solution: "Explain how your product or service solved the problem. Keep it concrete and focused on the outcome you delivered.",
+    impact: "Summarise the results. Use specific numbers where you can, and let the story show the value you created.",
+    quoteName: "Add a name",
+    quoteRole: "Add a title and company",
+    quoteText: "Add a customer quote here. A short, specific testimonial builds trust faster than any claim you could make yourself.",
+    result: "Close with where the customer is now and what comes next. A clear, confident finish works best.",
+    useCases: [
+      { icon: "📊", title: "Add a use case", desc: "Describe one way customers get value from what you offer. Keep it to a sentence or two." },
+      { icon: "🛡", title: "Add another", desc: "Highlight a second benefit or scenario. Click any text to edit it, or ask for a rewrite." },
+      { icon: "✓", title: "And a third", desc: "Round out the picture with one more use case that shows range." },
+    ],
+    closingHeading: "Ready to get started?",
+    closingSub: "Add a closing line that invites the reader to take the next step.",
   };
 }
 
@@ -116,6 +154,13 @@ export default function Studio() {
     const BOX = 560;
 
     function fit() {
+      if (formatMeta.id === "docs") {
+        // A document scrolls at a comfortable reading width rather than
+        // being squeezed into a square-ish box — height is natural/auto.
+        const width = Math.min(480, Math.max(120, stage!.clientWidth - STAGE_PADDING));
+        setFrameSize({ width: Math.round(width), height: 0 });
+        return;
+      }
       const availW = Math.min(BOX, Math.max(120, stage!.clientWidth - STAGE_PADDING));
       const availH = Math.min(BOX, Math.max(120, stage!.clientHeight - STAGE_PADDING));
       const ratio = formatMeta.aspect;
@@ -408,101 +453,106 @@ export default function Studio() {
           <div className={styles.sideMenuFooter}>💡 Design tips appear here</div>
         </div>
 
-        <div className={styles.stage} ref={stageRef}>
-          <div
-            ref={frameRef}
-            className={`${styles.frame} ${
-              design.theme === "white" ? styles.frameThemeWhite : design.theme === "dark" ? styles.frameThemeDark : styles.frameThemeOrange
-            }`}
-            style={
-              {
-                width: frameSize.width,
-                height: frameSize.height,
-                containerType: "size",
-              } as React.CSSProperties
-            }
-          >
-            <div className={styles.logoMark}>Strategy</div>
-            <div className={styles.frameMain}>
-              <div
-                className={`${styles.frameTitle} ${styles.frameInk}`}
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={(e) => commit({ titleInk: "", titleAccent: e.currentTarget.textContent || "" })}
-              >
-                {design.titleInk}
-                <span className={styles.frameInk} style={{ color: "var(--accent)" }}>
-                  {design.titleAccent}
-                </span>
-              </div>
+        <div className={`${styles.stage} ${design.format === "docs" ? styles.stageDoc : ""}`} ref={stageRef}>
+          {design.format === "docs" ? (
+            <DocsFrame frameRef={frameRef} design={design} width={frameSize.width} commit={commit} />
+          ) : (
+            <div
+              ref={frameRef}
+              className={`${styles.frame} ${
+                design.theme === "white" ? styles.frameThemeWhite : design.theme === "dark" ? styles.frameThemeDark : styles.frameThemeOrange
+              } ${design.format === "banner" ? styles.frameBanner : ""}`}
+              style={
+                {
+                  width: frameSize.width,
+                  height: frameSize.height,
+                  containerType: "size",
+                } as React.CSSProperties
+              }
+            >
+              <img className={styles.logoImg} src={LOGO_BY_THEME[design.theme]} alt="Strategy" />
 
-              {design.layout === "statement" && (
+              <div className={`${styles.frameMain} ${design.format !== "square" && design.format !== "story" ? styles.frameMainNarrow : ""}`}>
                 <div
-                  className={styles.frameSub}
+                  className={`${styles.frameTitle} ${styles.frameInk}`}
                   contentEditable
                   suppressContentEditableWarning
-                  onBlur={(e) => commit({ sub: e.currentTarget.textContent || "" })}
+                  onBlur={(e) => commit({ titleInk: "", titleAccent: e.currentTarget.textContent || "" })}
                 >
-                  {design.sub}
+                  {design.titleInk}
+                  <span className={styles.frameInk} style={{ color: "var(--accent)" }}>
+                    {design.titleAccent}
+                  </span>
                 </div>
-              )}
 
-              {design.layout === "keystats" && (
-                <div className={styles.statsRow}>
-                  {design.stats.map((s, i) => (
-                    <div className={styles.stat} key={i}>
-                      <div className={styles.statValue}>{s.v}</div>
-                      <div className={styles.statLabel}>{s.l}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                {design.layout === "statement" && (
+                  <div
+                    className={styles.frameSub}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => commit({ sub: e.currentTarget.textContent || "" })}
+                  >
+                    {design.sub}
+                  </div>
+                )}
 
-              {design.layout === "benefits" && (
-                <div className={styles.benefits}>
-                  {design.benefits.map((b, i) => (
-                    <div className={styles.benefit} key={i}>
-                      <span className={styles.benefitDot} />
-                      <span>{b}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+                {design.layout === "keystats" && (
+                  <div className={styles.statsRow}>
+                    {design.stats.map((s, i) => (
+                      <div className={styles.stat} key={i}>
+                        <div className={styles.statValue}>{s.v}</div>
+                        <div className={styles.statLabel}>{s.l}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-              {design.layout === "cardgrid" && (
-                <div className={styles.gridWrap}>
-                  {design.cards.map((c, i) => (
-                    <div className={styles.gridCard} key={i}>
-                      <span className={styles.gridCardValue}>{c.v}</span>
-                      <span className={styles.gridCardLabel}>{c.l}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+                {design.layout === "benefits" && (
+                  <div className={styles.benefits}>
+                    {design.benefits.map((b, i) => (
+                      <div className={styles.benefit} key={i}>
+                        <span className={styles.benefitDot} />
+                        <span>{b}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-              {design.layout === "textimage" && (
-                <div className={styles.bodyText}>{design.body}</div>
-              )}
+                {design.layout === "cardgrid" && (
+                  <div className={styles.gridWrap}>
+                    {design.cards.map((c, i) => (
+                      <div className={styles.gridCard} key={i}>
+                        <span className={styles.gridCardValue}>{c.v}</span>
+                        <span className={styles.gridCardLabel}>{c.l}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {design.layout === "textimage" && (
+                  <div className={styles.bodyText}>{design.body}</div>
+                )}
+              </div>
+              <div className={styles.frameFooter}>
+                <span
+                  className={styles.ctaBtn}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => commit({ cta: e.currentTarget.textContent || "" })}
+                >
+                  {design.cta}
+                </span>
+                <span
+                  className={styles.urlText}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => commit({ url: e.currentTarget.textContent || "" })}
+                >
+                  {design.url}
+                </span>
+              </div>
             </div>
-            <div className={styles.frameFooter}>
-              <span
-                className={styles.ctaBtn}
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={(e) => commit({ cta: e.currentTarget.textContent || "" })}
-              >
-                {design.cta}
-              </span>
-              <span
-                className={styles.urlText}
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={(e) => commit({ url: e.currentTarget.textContent || "" })}
-              >
-                {design.url}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
 
         <div className={`${styles.sideMenu} ${styles.right} ${rightOpen ? styles.open : ""}`}>
@@ -570,6 +620,146 @@ export default function Studio() {
       </div>
 
       {toast && <div className={styles.toast}>{toast}</div>}
+    </div>
+  );
+}
+
+function Edit({
+  as: Tag = "div",
+  className,
+  value,
+  field,
+  commit,
+}: {
+  as?: "div" | "span" | "h2";
+  className?: string;
+  value: string;
+  field: keyof DesignState;
+  commit: (patch: Partial<DesignState>) => void;
+}) {
+  return (
+    <Tag
+      className={className}
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={(e) => commit({ [field]: e.currentTarget.textContent || "" } as Partial<DesignState>)}
+    >
+      {value}
+    </Tag>
+  );
+}
+
+function DocsFrame({
+  frameRef,
+  design,
+  width,
+  commit,
+}: {
+  frameRef: React.RefObject<HTMLDivElement | null>;
+  design: DesignState;
+  width: number;
+  commit: (patch: Partial<DesignState>) => void;
+}) {
+  const s = styles;
+  return (
+    <div ref={frameRef} className={s.docFrame} style={{ width }}>
+      <div className={s.docHeader}>
+        <img className={s.docHeaderLogo} src={LOGO_BY_THEME.orange} alt="Strategy" />
+        <div
+          className={s.docHeaderTitle}
+          contentEditable
+          suppressContentEditableWarning
+          onBlur={(e) => commit({ titleInk: "", titleAccent: e.currentTarget.textContent || "" })}
+        >
+          {design.titleInk}
+          <strong>{design.titleAccent}</strong>
+        </div>
+        <Edit className={s.docHeaderSub} value={design.sub} field="sub" commit={commit} />
+      </div>
+
+      <div className={s.docBody}>
+        <Edit as="h2" className={s.docH2} value="About" field="about" commit={commit} />
+        <Edit className={s.docP} value={design.about} field="about" commit={commit} />
+
+        <div className={s.docStatsBox}>
+          <Edit className={s.docStatsHeading} value={design.statsHeading} field="statsHeading" commit={commit} />
+          <div className={s.docStatsRow}>
+            {design.stats.map((st, i) => (
+              <div className={s.docStat} key={i}>
+                <div className={s.docStatValue}>{st.v}</div>
+                <div className={s.docStatLabel}>{st.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={s.docSection}>
+          <div className={s.docH2}>The Challenge</div>
+          <Edit className={s.docP} value={design.challenge} field="challenge" commit={commit} />
+        </div>
+
+        <div className={s.docSection}>
+          <div className={s.docH2}>The Solution</div>
+          <Edit className={s.docP} value={design.solution} field="solution" commit={commit} />
+        </div>
+
+        <div className={s.docSection}>
+          <div className={s.docH2}>The Impact</div>
+          <Edit className={s.docP} value={design.impact} field="impact" commit={commit} />
+        </div>
+
+        <div className={s.docQuoteBlock}>
+          <div className={s.docQuoteName}>
+            <Edit as="span" value={design.quoteName} field="quoteName" commit={commit} />
+          </div>
+          <Edit className={s.docQuoteRole} value={design.quoteRole} field="quoteRole" commit={commit} />
+          <Edit className={s.docQuoteText} value={design.quoteText} field="quoteText" commit={commit} />
+        </div>
+
+        <div className={s.docSection}>
+          <div className={s.docH2}>The Result</div>
+          <Edit className={s.docP} value={design.result} field="result" commit={commit} />
+        </div>
+
+        <div className={s.docH2} style={{ marginTop: 8 }}>
+          Most Important Use Cases
+        </div>
+        <div className={s.docUseCases}>
+          {design.useCases.map((u, i) => (
+            <div className={s.docUseCase} key={i}>
+              <div className={s.docUseCaseIcon}>{u.icon}</div>
+              <div className={s.docUseCaseTitle}>{u.title}</div>
+              <div className={s.docUseCaseDesc}>{u.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className={s.docFooter}>
+        <div className={s.docFooterLeft}>
+          <Edit as="h2" className={s.docFooterHeading} value={design.closingHeading} field="closingHeading" commit={commit} />
+          <Edit className={s.docFooterSub} value={design.closingSub} field="closingSub" commit={commit} />
+          <span
+            className={s.docFooterCta}
+            contentEditable
+            suppressContentEditableWarning
+            onBlur={(e) => commit({ cta: e.currentTarget.textContent || "" })}
+          >
+            {design.cta}
+          </span>
+        </div>
+        <div className={s.docFooterRight}>
+          <div className={s.docQr}>QR</div>
+          <span
+            className={s.docFooterUrl}
+            contentEditable
+            suppressContentEditableWarning
+            onBlur={(e) => commit({ url: e.currentTarget.textContent || "" })}
+          >
+            {design.url}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
