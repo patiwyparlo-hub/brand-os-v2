@@ -103,18 +103,21 @@ export default function Studio() {
     [design]
   );
 
-  // Fit the canvas to the stage's actual space (like object-fit: contain) so
-  // extreme ratios (Story, Banner, Docs) shrink instead of overflowing — the
-  // canvas's real pixel width then drives the cqw-based text sizing inside it.
+  // Fit the canvas into a comfortable, consistent-footprint box (like a real
+  // design tool's canvas, not something that balloons to fill the screen),
+  // shrinking further only if the stage itself is smaller than that box.
+  // Text inside uses cqmin (the frame's smaller dimension), so a thin Banner
+  // or narrow Story gets proportionally smaller type instead of overflowing.
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage || step !== "editor") return;
 
     const STAGE_PADDING = 32;
+    const BOX = 560;
 
     function fit() {
-      const availW = Math.max(120, stage!.clientWidth - STAGE_PADDING);
-      const availH = Math.max(120, stage!.clientHeight - STAGE_PADDING);
+      const availW = Math.min(BOX, Math.max(120, stage!.clientWidth - STAGE_PADDING));
+      const availH = Math.min(BOX, Math.max(120, stage!.clientHeight - STAGE_PADDING));
       const ratio = formatMeta.aspect;
       let width = Math.min(availW, availH * ratio);
       let height = width / ratio;
@@ -415,7 +418,7 @@ export default function Studio() {
               {
                 width: frameSize.width,
                 height: frameSize.height,
-                containerType: "inline-size",
+                containerType: "size",
               } as React.CSSProperties
             }
           >
