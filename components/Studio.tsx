@@ -466,7 +466,7 @@ export default function Studio() {
                 {
                   width: frameSize.width,
                   height: frameSize.height,
-                  containerType: "size",
+                  "--cqmin": `${Math.min(frameSize.width, frameSize.height) / 100}px`,
                 } as React.CSSProperties
               }
             >

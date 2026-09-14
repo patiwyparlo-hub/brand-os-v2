@@ -485,7 +485,7 @@
 
 .logoImg {
   display: block;
-  height: 9cqmin;
+  height: calc(9 * var(--cqmin));
   width: auto;
   align-self: flex-start;
 }
@@ -515,7 +515,7 @@
 .frameBanner .logoImg {
   order: 2;
   align-self: flex-start;
-  height: 14cqmin;
+  height: calc(14 * var(--cqmin));
 }
 
 .frameBanner .frameMain {
@@ -538,7 +538,7 @@
   font-weight: 500;
   line-height: 1.06;
   letter-spacing: -0.02em;
-  font-size: 7cqmin;
+  font-size: calc(7 * var(--cqmin));
   outline: none;
   border-radius: 4px;
 }
@@ -551,7 +551,7 @@
   line-height: 1.34;
   letter-spacing: -0.01em;
   white-space: pre-line;
-  font-size: 3cqmin;
+  font-size: calc(3 * var(--cqmin));
   color: #0a0a0b;
   outline: none;
 }
@@ -562,12 +562,12 @@
 }
 
 .stat { display: flex; flex-direction: column; gap: 4px; }
-.statValue { font-weight: 600; line-height: 1; color: var(--accent); font-size: 6cqmin; letter-spacing: -0.02em; }
+.statValue { font-weight: 600; line-height: 1; color: var(--accent); font-size: calc(6 * var(--cqmin)); letter-spacing: -0.02em; }
 .frameThemeOrange .statValue { color: #0a0a0b; }
-.statLabel { font-weight: 500; line-height: 1.25; font-size: 2.4cqmin; color: #0a0a0b; }
+.statLabel { font-weight: 500; line-height: 1.25; font-size: calc(2.4 * var(--cqmin)); color: #0a0a0b; }
 
 .benefits { display: flex; flex-direction: column; gap: 10px; }
-.benefit { display: flex; align-items: baseline; gap: 8px; font-weight: 500; font-size: 3cqmin; }
+.benefit { display: flex; align-items: baseline; gap: 8px; font-weight: 500; font-size: calc(3 * var(--cqmin)); }
 .benefitDot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; align-self: center; }
 .frameThemeOrange .benefitDot { background: #0a0a0b; }
 
@@ -581,15 +581,15 @@
   padding: 8%;
 }
 .frameThemeDark .gridCard { border-color: rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); }
-.gridCardValue { font-weight: 600; color: var(--accent); font-size: 3.4cqmin; }
+.gridCardValue { font-weight: 600; color: var(--accent); font-size: calc(3.4 * var(--cqmin)); }
 .frameThemeOrange .gridCardValue { color: #0a0a0b; }
-.gridCardLabel { font-weight: 500; font-size: 1.9cqmin; color: #0a0a0b; }
+.gridCardLabel { font-weight: 500; font-size: calc(1.9 * var(--cqmin)); color: #0a0a0b; }
 .frameThemeDark .gridCardLabel { color: #fff; }
 
 .bodyText {
   font-weight: 500;
   line-height: 1.45;
-  font-size: 2.9cqmin;
+  font-size: calc(2.9 * var(--cqmin));
   color: #0a0a0b;
 }
 
@@ -609,7 +609,7 @@
   letter-spacing: -0.01em;
   padding: 0.55em 1.1em;
   border-radius: 4px;
-  font-size: 2.6cqmin;
+  font-size: calc(2.6 * var(--cqmin));
   outline: none;
   border: none;
   cursor: text;
@@ -619,7 +619,7 @@
   color: var(--accent);
   font-weight: 600;
   letter-spacing: -0.01em;
-  font-size: 2.4cqmin;
+  font-size: calc(2.4 * var(--cqmin));
   outline: none;
 }
 .frameThemeOrange .urlText { color: #0a0a0b; }
