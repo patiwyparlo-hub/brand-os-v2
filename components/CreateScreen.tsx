@@ -19,8 +19,6 @@ export default function CreateScreen({
   onToggleTheme?: () => void;
 }) {
   const [brief, setBrief] = useState("");
-  const [visual, setVisual] = useState("");
-  const [visualOpen, setVisualOpen] = useState(false);
   const [format, setFormat] = useState<FormatId>("square");
   const [ownTheme, toggleOwnTheme] = useContentTheme();
   const contentTheme = theme ?? ownTheme;
@@ -58,11 +56,6 @@ export default function CreateScreen({
       </header>
 
       <main className={styles.main}>
-        <div className={styles.eyebrow}>
-          <span className={styles.eyebrowDot} />
-          Brand OS · Agentic Designer
-        </div>
-
         <h1 className={styles.heading}>
           What are we <em>creating</em> today?
         </h1>
@@ -109,27 +102,8 @@ export default function CreateScreen({
           </button>
         </div>
 
-        <button
-          type="button"
-          className={`${styles.expandToggle} ${visualOpen ? styles.expandToggleOpen : ""}`}
-          onClick={() => setVisualOpen((v) => !v)}
-        >
-          Have a visual in mind? Describe it
-          <ChevronIcon className={styles.chevron} />
-        </button>
-
-        {visualOpen && (
-          <input
-            type="text"
-            className={styles.visualInput}
-            placeholder="Leave blank and the AI sets the mood and composition"
-            value={visual}
-            onChange={(e) => setVisual(e.target.value)}
-          />
-        )}
-
         <div className={styles.ctaRow}>
-          <button type="button" className={styles.primaryBtn} onClick={() => onCreate?.(brief, visual, format)}>
+          <button type="button" className={styles.primaryBtn} onClick={() => onCreate?.(brief, "", format)}>
             <SparklesIcon />
             Create four directions
           </button>
@@ -187,14 +161,6 @@ function SparklesIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2l1.6 5.6L19 9l-5.4 1.4L12 16l-1.6-5.6L5 9l5.4-1.4L12 2z" />
       <path d="M19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15z" opacity="0.7" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ className }: { className?: string }) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M6 9l6 6 6-6" />
     </svg>
   );
 }
