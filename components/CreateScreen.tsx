@@ -108,19 +108,14 @@ export default function CreateScreen({
         </div>
 
         <div className={styles.ctaRow}>
-          <button type="button" className={styles.secondaryBtn} onClick={() => onSkip?.(format)}>
-            Skip to editor
-          </button>
           <button type="button" className={styles.primaryBtn} onClick={() => onCreate?.(brief, "", format)}>
             <SparklesIcon />
             Generate directions
           </button>
+          <button type="button" className={styles.secondaryBtn} onClick={() => onSkip?.(format)}>
+            Skip to editor
+          </button>
         </div>
-
-        <button type="button" className={styles.helpBtn}>
-          <HelpIcon />
-          How does this work?
-        </button>
       </main>
 
       <footer className={styles.footer}>Strategy · Brand OS · Internal Preview</footer>
@@ -166,16 +161,6 @@ function SparklesIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2l1.6 5.6L19 9l-5.4 1.4L12 16l-1.6-5.6L5 9l5.4-1.4L12 2z" />
       <path d="M19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15z" opacity="0.7" />
-    </svg>
-  );
-}
-
-function HelpIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M9.5 9a2.5 2.5 0 114.2 1.8c-.6.6-1.7 1-1.7 2.2" />
-      <path d="M12 17h.01" />
     </svg>
   );
 }
