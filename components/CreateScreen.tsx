@@ -71,6 +71,28 @@ export default function CreateScreen({
           One sentence or a full brief. Brand OS turns it into an on-brand design.
         </p>
 
+        <div style={{ width: "100%" }}>
+          <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
+            Pick your canvas
+          </div>
+          <div className={styles.formats}>
+            {FORMATS.map((f) => (
+              <button
+                type="button"
+                key={f.id}
+                className={`${styles.formatCard} ${format === f.id ? styles.formatCardSelected : ""}`}
+                onClick={() => setFormat(f.id)}
+              >
+                <span className={styles.formatIcon}>
+                  <span style={{ aspectRatio: f.ratio, width: f.ratio === "9 / 16" ? 14 : 26, height: f.ratio === "9 / 16" ? 24 : undefined }} />
+                </span>
+                <span className={styles.formatName}>{f.name}</span>
+                <span className={styles.formatHint}>{f.hint}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className={styles.inputCard}>
           <button type="button" className={styles.iconBtn} title="Attach a document" aria-label="Attach a document">
             <PaperclipIcon />
@@ -105,28 +127,6 @@ export default function CreateScreen({
             onChange={(e) => setVisual(e.target.value)}
           />
         )}
-
-        <div style={{ width: "100%" }}>
-          <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
-            Pick your canvas
-          </div>
-          <div className={styles.formats}>
-            {FORMATS.map((f) => (
-              <button
-                type="button"
-                key={f.id}
-                className={`${styles.formatCard} ${format === f.id ? styles.formatCardSelected : ""}`}
-                onClick={() => setFormat(f.id)}
-              >
-                <span className={styles.formatIcon}>
-                  <span style={{ aspectRatio: f.ratio, width: f.ratio === "9 / 16" ? 14 : 26, height: f.ratio === "9 / 16" ? 24 : undefined }} />
-                </span>
-                <span className={styles.formatName}>{f.name}</span>
-                <span className={styles.formatHint}>{f.hint}</span>
-              </button>
-            ))}
-          </div>
-        </div>
 
         <div className={styles.ctaRow}>
           <button type="button" className={styles.primaryBtn} onClick={() => onCreate?.(brief, visual, format)}>
