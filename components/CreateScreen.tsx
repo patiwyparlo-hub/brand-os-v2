@@ -66,7 +66,7 @@ export default function CreateScreen({
 
         <div style={{ width: "100%" }}>
           <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
-            Pick your canvas
+            1. Select format
           </div>
           <div className={styles.formats}>
             {FORMATS.map((f) => (
@@ -86,7 +86,11 @@ export default function CreateScreen({
           </div>
         </div>
 
-        <div className={styles.inputCard}>
+        <div style={{ width: "100%" }}>
+          <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
+            2. Describe your idea
+          </div>
+          <div className={styles.inputCard}>
           <button type="button" className={styles.iconBtn} title="Attach a document" aria-label="Attach a document">
             <PaperclipIcon />
           </button>
@@ -100,12 +104,13 @@ export default function CreateScreen({
           <button type="button" className={styles.iconBtn} title="Sharpen your brief with AI" aria-label="Sharpen your brief with AI">
             <SparkleIcon />
           </button>
+          </div>
         </div>
 
         <div className={styles.ctaRow}>
           <button type="button" className={styles.primaryBtn} onClick={() => onCreate?.(brief, "", format)}>
             <SparklesIcon />
-            Create four directions
+            Generate directions
           </button>
           <button type="button" className={styles.secondaryBtn} onClick={() => onSkip?.(format)}>
             Skip to editor
