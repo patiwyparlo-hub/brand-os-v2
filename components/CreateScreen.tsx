@@ -108,12 +108,12 @@ export default function CreateScreen({
         </div>
 
         <div className={styles.ctaRow}>
+          <button type="button" className={styles.secondaryBtn} onClick={() => onSkip?.(format)}>
+            Skip to editor
+          </button>
           <button type="button" className={styles.primaryBtn} onClick={() => onCreate?.(brief, "", format)}>
             <SparklesIcon />
             Generate directions
-          </button>
-          <button type="button" className={styles.secondaryBtn} onClick={() => onSkip?.(format)}>
-            Skip to editor
           </button>
         </div>
 
