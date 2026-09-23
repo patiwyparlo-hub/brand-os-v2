@@ -399,7 +399,7 @@
   /* Fixed warm wash on top of the glass pane so the card always reads
      slightly orange, regardless of which hero blob (purple or orange)
      happens to be behind it at any given moment. */
-  background: linear-gradient(rgba(250, 102, 15, 0.16), rgba(250, 102, 15, 0.16)), var(--glass-pane);
+  background: linear-gradient(rgba(250, 102, 15, 0.24), rgba(250, 102, 15, 0.24)), var(--glass-pane);
   backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-highlight), 0 6px 20px rgba(0, 0, 0, 0.12);
   color: var(--ink-secondary);
@@ -409,7 +409,7 @@
 
 .formatCard:hover {
   border-color: var(--glass-line);
-  background: linear-gradient(rgba(250, 102, 15, 0.22), rgba(250, 102, 15, 0.22)), var(--glass-pane-strong);
+  background: linear-gradient(rgba(250, 102, 15, 0.32), rgba(250, 102, 15, 0.32)), var(--glass-pane-strong);
   transform: translateY(-2px);
   box-shadow: var(--glass-highlight), 0 10px 28px rgba(0, 0, 0, 0.16);
 }
