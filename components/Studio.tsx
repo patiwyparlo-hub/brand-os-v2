@@ -7,7 +7,7 @@ import type { FormatId } from "./formats";
 import styles from "./Studio.module.css";
 import { useContentTheme } from "./useContentTheme";
 
-type Step = "brief" | "loading" | "directions" | "editor";
+type Step = "brief" | "loading" | "editor";
 type Theme = "white" | "dark" | "orange";
 type Layout = "statement" | "keystats" | "benefits" | "cardgrid" | "textimage";
 type EditorFormat = "square" | "landscape" | "wide" | "story" | "banner" | "docs";
@@ -182,24 +182,16 @@ export default function Studio() {
   function startFromBrief(text: string, _visual: string, format: FormatId) {
     setBrief(text);
     setStep("loading");
-    window.setTimeout(() => setStep("directions"), 1400);
     const mapped: EditorFormat = format === "document" ? "docs" : format;
-    setHistory([defaultDesign(mapped, text)]);
+    const dir = DIRECTIONS[0];
+    setHistory([{ ...defaultDesign(mapped, text), theme: dir.theme, layout: dir.layout }]);
     setHistIndex(0);
+    window.setTimeout(() => setStep("editor"), 1400);
   }
 
   function skipToEditor(format: FormatId) {
     const mapped: EditorFormat = format === "document" ? "docs" : format;
     setHistory([defaultDesign(mapped, "")]);
-    setHistIndex(0);
-    setStep("editor");
-  }
-
-  function pickDirection(dir: (typeof DIRECTIONS)[number]) {
-    setHistory((h) => {
-      const base = h[0] ?? defaultDesign("square", brief);
-      return [{ ...base, theme: dir.theme, layout: dir.layout }];
-    });
     setHistIndex(0);
     setStep("editor");
   }
@@ -287,68 +279,11 @@ export default function Studio() {
         </div>
         <div className={styles.loadingWrap}>
           <div className={styles.loadingSpark}>✨</div>
-          <div className={styles.loadingTitle}>Creating your directions</div>
+          <div className={styles.loadingTitle}>Creating your design</div>
           <p className={styles.loadingSub}>
-            Analyzing your brief and generating four distinct creative concepts tailored to your message.
+            Analyzing your brief and generating an on-brand design tailored to your message.
           </p>
           <div className={styles.loadingHint}>Usually takes 10–20 seconds</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === "directions") {
-    return (
-      <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
-        <div className={styles.topbar}>
-          <button type="button" className={styles.btnGhostSm} onClick={() => setStep("brief")}>
-            ← Back to brief
-          </button>
-          <div style={{ fontSize: 13, color: "var(--ink-secondary)" }}>Choose a direction to continue</div>
-          <div className={styles.headerRight}>
-            <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
-            <button
-              type="button"
-              className={styles.btnGhostSm}
-              onClick={() => {
-                setStep("loading");
-                window.setTimeout(() => setStep("directions"), 1000);
-              }}
-            >
-              ↻ Regenerate
-            </button>
-          </div>
-        </div>
-        <div className={styles.directionsBody}>
-          <div className={styles.directionsGrid}>
-            {DIRECTIONS.map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                className={styles.directionCard}
-                onClick={() => pickDirection(d)}
-              >
-                <div
-                  className={styles.directionPreview}
-                  style={{
-                    background:
-                      d.theme === "dark"
-                        ? "linear-gradient(162deg, #121215 0%, #070708 100%)"
-                        : d.theme === "orange"
-                        ? "linear-gradient(#fa660f 0%, #fa660f 56%, #ffffff 100%)"
-                        : "#ffffff",
-                    color: d.theme === "white" ? "#0a0a0b" : d.theme === "orange" ? "#0a0a0b" : "#fff",
-                  }}
-                >
-                  <span>{brief.trim() || "Make something on brand"}</span>
-                </div>
-                <div className={styles.directionMeta}>
-                  <div className={styles.directionName}>{d.name}</div>
-                  <div className={styles.directionDesc}>{d.desc}</div>
-                </div>
-              </button>
-            ))}
-          </div>
         </div>
       </div>
     );
