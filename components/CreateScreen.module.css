@@ -69,13 +69,6 @@
   pointer-events: none;
 }
 
-.glow {
-  background:
-    radial-gradient(58% 42% at 50% -6%, rgba(250, 102, 15, 0.18), rgba(0, 0, 0, 0) 70%),
-    radial-gradient(44% 42% at 92% 104%, rgba(250, 102, 15, 0.1), rgba(0, 0, 0, 0) 70%),
-    radial-gradient(36% 32% at 4% 92%, rgba(255, 214, 180, 0.05), rgba(0, 0, 0, 0) 70%);
-}
-
 .grid {
   background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
   background-size: 80px 80px, 80px 80px;

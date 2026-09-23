@@ -71,7 +71,6 @@ export default function CreateScreen({
 
   return (
     <div ref={pageRef} className={`${styles.page} ${isLight ? styles.light : ""}`}>
-      <div className={`${styles.layer} ${styles.glow}`} />
       <div className={`${styles.layer} ${styles.grid}`} />
       <div className={`${styles.layer} ${styles.scrim}`} />
       <div className={styles.auroraLayer}>
