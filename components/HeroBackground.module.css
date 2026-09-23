@@ -1,0 +1,94 @@
+.heroBg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+}
+
+.grid {
+  background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px;
+  opacity: 0.02;
+}
+
+.heroBg.light .grid {
+  background-image: linear-gradient(#0a0a0b 1px, transparent 1px), linear-gradient(90deg, #0a0a0b 1px, transparent 1px);
+  opacity: 0.035;
+}
+
+.scrim {
+  background: linear-gradient(105deg, rgba(6, 6, 7, 0.62) 0%, rgba(6, 6, 7, 0.28) 45%, rgba(0, 0, 0, 0) 78%);
+}
+
+.heroBg.light .scrim {
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.2) 45%, rgba(255, 255, 255, 0) 78%);
+}
+
+/* Two large, soft blobs (violet + warm orange) that stay put behind a
+   dark canvas cover — the canvas (see HeroBackground.tsx) erases a soft
+   round "brush dab" wherever the lagging pointer has been, permanently
+   uncovering the color like a real brush stroke. Shape keeps morphing
+   gently on its own via blobMorph so it never looks static even at rest. */
+.heroGlow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.heroBlob {
+  position: absolute;
+  border-radius: 46% 54% 60% 40% / 50% 45% 55% 50%;
+  animation: blobMorph 24s ease-in-out infinite alternate;
+}
+
+.heroBlobPurple {
+  top: -12%;
+  left: -14%;
+  width: 78vmax;
+  height: 78vmax;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.55) 0%, rgba(126, 34, 206, 0.26) 42%, rgba(0, 0, 0, 0) 72%);
+  mix-blend-mode: screen;
+}
+
+.heroBlobOrange {
+  bottom: -14%;
+  right: -12%;
+  width: 68vmax;
+  height: 68vmax;
+  background: radial-gradient(circle, rgba(255, 158, 87, 0.5) 0%, rgba(234, 88, 12, 0.22) 42%, rgba(0, 0, 0, 0) 72%);
+  mix-blend-mode: screen;
+  animation-duration: 19s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes blobMorph {
+  0% { border-radius: 46% 54% 60% 40% / 50% 45% 55% 50%; }
+  50% { border-radius: 58% 42% 45% 55% / 42% 58% 42% 58%; }
+  100% { border-radius: 50% 50% 42% 58% / 58% 42% 58% 42%; }
+}
+
+/* multiply (not normal+low-opacity) keeps the same purple/orange shade
+   as dark mode's screen blend — normal+opacity just washes it out pale
+   against the white page background. */
+.heroBg.light .heroBlob {
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroBlob {
+    animation: none;
+  }
+}
+
+.heroCanvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}

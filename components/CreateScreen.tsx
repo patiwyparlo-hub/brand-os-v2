@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import styles from "./CreateScreen.module.css";
 import { FORMATS, type FormatId } from "./formats";
 import { useContentTheme, type ContentTheme } from "./useContentTheme";
+import HeroBackground from "./HeroBackground";
 
 const RECENT_EXAMPLES = [
   { title: "Q4 product launch", format: "Landscape", time: "2 days ago" },
@@ -30,148 +31,10 @@ export default function CreateScreen({
   const contentTheme = theme ?? ownTheme;
   const toggleContentTheme = onToggleTheme ?? toggleOwnTheme;
   const isLight = contentTheme === "world";
-  const pageRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // The color blobs behind the hero stay put — a canvas on top paints an
-  // opaque cover over them and erases a soft round "brush dab" wherever
-  // the (lerped, lagging) pointer has been, uncovering the color like a
-  // brush stroke. Erased areas stay revealed permanently — the canvas is
-  // never re-covered — so the painted trail accumulates as the pointer
-  // moves around. Runs on the canvas 2D context directly — no React
-  // state — so it stays smooth regardless of render cost elsewhere.
-  useEffect(() => {
-    const page = pageRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!page || !canvas || !ctx) return;
-
-    const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let reduceMotion = reduceMotionQuery.matches;
-
-    const brushRadius = 170;
-    const lerp = 0.14;
-
-    let target = { x: 0, y: 0 };
-    let current = { x: 0, y: 0 };
-    let width = 0;
-    let height = 0;
-
-    function paintCover() {
-      const stops = isLight
-        ? ["#fcfcfa", "#f7f7f4", "#f0efe9", "#f0efe9"]
-        : ["#060607", "#0b0b0e", "#131318", "#17161a"];
-      const grad = ctx!.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, stops[0]);
-      grad.addColorStop(0.46, stops[1]);
-      grad.addColorStop(0.78, stops[2]);
-      grad.addColorStop(1, stops[3]);
-      ctx!.globalCompositeOperation = "source-over";
-      ctx!.fillStyle = grad;
-      ctx!.fillRect(0, 0, width, height);
-    }
-
-    function dab(x: number, y: number) {
-      const grad = ctx!.createRadialGradient(x, y, 0, x, y, brushRadius);
-      grad.addColorStop(0, "rgba(0, 0, 0, 1)");
-      grad.addColorStop(0.6, "rgba(0, 0, 0, 0.55)");
-      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx!.globalCompositeOperation = "destination-out";
-      ctx!.fillStyle = grad;
-      ctx!.beginPath();
-      ctx!.arc(x, y, brushRadius, 0, Math.PI * 2);
-      ctx!.fill();
-    }
-
-    // Resting position (no pointer yet, or pointer left the section) —
-    // a bit above center, roughly where the headline sits.
-    function restingTarget() {
-      return { x: width * 0.5, y: height * 0.38 };
-    }
-
-    function resize() {
-      const rect = page!.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = rect.width;
-      height = rect.height;
-      canvas!.width = width * dpr;
-      canvas!.height = height * dpr;
-      canvas!.style.width = `${width}px`;
-      canvas!.style.height = `${height}px`;
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paintCover();
-    }
-
-    resize();
-    target = restingTarget();
-    current = { ...target };
-    dab(current.x, current.y);
-
-    function onMove(e: PointerEvent) {
-      const rect = page!.getBoundingClientRect();
-      target = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      if (reduceMotion) {
-        current = { ...target };
-        paintCover();
-        dab(current.x, current.y);
-      }
-    }
-    function onLeave() {
-      target = restingTarget();
-      if (reduceMotion) {
-        current = { ...target };
-        paintCover();
-        dab(current.x, current.y);
-      }
-    }
-    function onResize() {
-      resize();
-      target = restingTarget();
-      current = { ...target };
-      dab(current.x, current.y);
-    }
-    function onMotionChange() {
-      reduceMotion = reduceMotionQuery.matches;
-      if (reduceMotion) {
-        paintCover();
-        dab(current.x, current.y);
-      }
-    }
-
-    page.addEventListener("pointermove", onMove);
-    page.addEventListener("pointerleave", onLeave);
-    window.addEventListener("resize", onResize);
-    reduceMotionQuery.addEventListener("change", onMotionChange);
-
-    let raf = 0;
-    if (!reduceMotion) {
-      const tick = () => {
-        current.x += (target.x - current.x) * lerp;
-        current.y += (target.y - current.y) * lerp;
-        dab(current.x, current.y);
-        raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
-    }
-
-    return () => {
-      cancelAnimationFrame(raf);
-      page.removeEventListener("pointermove", onMove);
-      page.removeEventListener("pointerleave", onLeave);
-      window.removeEventListener("resize", onResize);
-      reduceMotionQuery.removeEventListener("change", onMotionChange);
-    };
-  }, [isLight]);
 
   return (
-    <div ref={pageRef} className={`${styles.page} ${isLight ? styles.light : ""}`}>
-      <div className={`${styles.layer} ${styles.grid}`} />
-      <div className={`${styles.layer} ${styles.scrim}`} />
-      <div className={styles.heroGlow}>
-        <div className={`${styles.heroBlob} ${styles.heroBlobPurple}`} />
-        <div className={`${styles.heroBlob} ${styles.heroBlobOrange}`} />
-        <canvas ref={canvasRef} className={styles.heroCanvas} />
-      </div>
+    <div className={`${styles.page} ${isLight ? styles.light : ""}`}>
+      <HeroBackground isLight={isLight} />
 
       <header className={styles.header}>
         <div className={styles.brand}>
