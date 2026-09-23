@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./CreateScreen.module.css";
 import { FORMATS, type FormatId } from "./formats";
 import { useContentTheme, type ContentTheme } from "./useContentTheme";
@@ -24,12 +24,46 @@ export default function CreateScreen({
   const contentTheme = theme ?? ownTheme;
   const toggleContentTheme = onToggleTheme ?? toggleOwnTheme;
   const isLight = contentTheme === "world";
+  const pageRef = useRef<HTMLDivElement>(null);
+  const cursorGlowRef = useRef<HTMLDivElement>(null);
+
+  // Spotlight that trails the cursor, like designcode.io's card-hover glow.
+  // Writes directly to the DOM (no React state) so it stays smooth at 60fps.
+  useEffect(() => {
+    const page = pageRef.current;
+    const glow = cursorGlowRef.current;
+    if (!page || !glow) return;
+
+    let raf = 0;
+    function onMove(e: PointerEvent) {
+      const rect = page!.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        glow!.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        glow!.style.opacity = "1";
+      });
+    }
+    function onLeave() {
+      glow!.style.opacity = "0";
+    }
+
+    page.addEventListener("pointermove", onMove);
+    page.addEventListener("pointerleave", onLeave);
+    return () => {
+      page.removeEventListener("pointermove", onMove);
+      page.removeEventListener("pointerleave", onLeave);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   return (
-    <div className={`${styles.page} ${isLight ? styles.light : ""}`}>
+    <div ref={pageRef} className={`${styles.page} ${isLight ? styles.light : ""}`}>
       <div className={`${styles.layer} ${styles.glow}`} />
       <div className={`${styles.layer} ${styles.grid}`} />
       <div className={`${styles.layer} ${styles.scrim}`} />
+      <div ref={cursorGlowRef} className={styles.cursorGlow} />
 
       <header className={styles.header}>
         <div className={styles.brand}>
