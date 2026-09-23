@@ -216,8 +216,6 @@ export default function CreateScreen({
           </button>
         </div>
       </main>
-
-      <footer className={styles.footer}>Strategy · Brand OS</footer>
     </div>
   );
 }
