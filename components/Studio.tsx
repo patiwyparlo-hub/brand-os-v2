@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import CreateScreen from "./CreateScreen";
+import HeroBackground from "./HeroBackground";
 import type { FormatId } from "./formats";
 import styles from "./Studio.module.css";
 import { useContentTheme } from "./useContentTheme";
@@ -266,6 +267,7 @@ export default function Studio() {
   if (step === "loading") {
     return (
       <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
+        <HeroBackground isLight={isLight} />
         <div className={styles.topbar}>
           <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
             <span>Strategy</span>
@@ -292,6 +294,7 @@ export default function Studio() {
   // editor
   return (
     <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
+      <HeroBackground isLight={isLight} />
       <div className={styles.topbar}>
         <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
           <span>Strategy</span>

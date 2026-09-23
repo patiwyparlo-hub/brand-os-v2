@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import TopBar from "@/components/TopBar";
 import CommandPalette from "@/components/CommandPalette";
 import PostOverlay, { DEFAULT_POST } from "@/components/PostOverlay";
+import HeroBackground from "@/components/HeroBackground";
+import { useContentTheme } from "@/components/useContentTheme";
 import type { BrandAsset, PostState, UserSession } from "@/lib/types";
 
 interface Turn {
@@ -27,6 +29,8 @@ export default function Chat({ user }: { user: UserSession }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [post, setPost] = useState<PostState | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [contentTheme] = useContentTheme();
+  const isLight = contentTheme === "world";
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
@@ -71,10 +75,12 @@ export default function Chat({ user }: { user: UserSession }) {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-[var(--bg)] text-[var(--text)]">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-[var(--bg)] text-[var(--text)]">
+      <HeroBackground isLight={isLight} />
+
       <TopBar user={user} onBrowse={() => setPaletteOpen(true)} />
 
-      <div className="flex-1 overflow-y-auto px-6">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6">
         {turns.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <h1 className="text-3xl font-bold">{`Hi ${user.name.split(" ")[0]}.`}</h1>
@@ -152,7 +158,7 @@ export default function Chat({ user }: { user: UserSession }) {
           e.preventDefault();
           if (input.trim()) ask(input.trim());
         }}
-        className="mx-auto flex w-full max-w-2xl gap-2 px-6 pb-6"
+        className="relative z-10 mx-auto flex w-full max-w-2xl gap-2 px-6 pb-6"
       >
         <input
           value={input}

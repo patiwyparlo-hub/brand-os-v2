@@ -17,7 +17,7 @@ export default function TopBar({ user, onBrowse }: { user: UserSession; onBrowse
   }
 
   return (
-    <div className="flex h-14 shrink-0 items-center justify-between px-5">
+    <div className="relative z-10 flex h-14 shrink-0 items-center justify-between px-5">
       <div className="flex items-center gap-2">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black">
           <Image src="/brand/strategy-logo-white.png" alt="" width={12} height={12} />
