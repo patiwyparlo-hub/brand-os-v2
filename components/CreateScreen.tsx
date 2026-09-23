@@ -167,7 +167,7 @@ export default function CreateScreen({
           One sentence or a full brief. Brand OS turns it into an on-brand design.
         </p>
 
-        <div style={{ width: "100%" }}>
+        <div style={{ width: "100%", marginTop: 24 }}>
           <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
             1. Select format
           </div>

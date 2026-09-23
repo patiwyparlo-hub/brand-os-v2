@@ -125,9 +125,12 @@
   100% { border-radius: 50% 50% 42% 58% / 58% 42% 58% 42%; }
 }
 
+/* multiply (not normal+low-opacity) keeps the same purple/orange shade
+   as dark mode's screen blend — normal+opacity just washes it out pale
+   against the white page background. */
 .page.light .heroBlob {
-  mix-blend-mode: normal;
-  opacity: 0.34;
+  mix-blend-mode: multiply;
+  opacity: 0.85;
 }
 
 @media (prefers-reduced-motion: reduce) {
