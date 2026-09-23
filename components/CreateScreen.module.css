@@ -381,6 +381,10 @@
   text-align: left;
 }
 
+.page.light .sectionLabel {
+  color: #000000;
+}
+
 .formats {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -493,6 +497,10 @@
   font-size: 14px;
   cursor: pointer;
   transition: color 180ms var(--ease-out);
+}
+
+.page.light .secondaryBtn {
+  color: #000000;
 }
 
 .secondaryBtn:hover {
