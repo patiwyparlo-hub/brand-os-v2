@@ -448,6 +448,53 @@
   line-height: 1.3;
 }
 
+.recentGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.recentCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--glass-line);
+  background: var(--glass-pane);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-highlight), 0 6px 20px rgba(0, 0, 0, 0.12);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 180ms var(--ease-out), background 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.recentCard:hover {
+  border-color: var(--accent-edge);
+  background: var(--glass-pane-strong);
+  transform: translateY(-2px);
+}
+
+.recentCardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.recentCardMeta {
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 480px) {
+  .recentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .ctaRow {
   display: flex;
   flex-direction: column;

@@ -5,6 +5,12 @@ import styles from "./CreateScreen.module.css";
 import { FORMATS, type FormatId } from "./formats";
 import { useContentTheme, type ContentTheme } from "./useContentTheme";
 
+const RECENT_EXAMPLES = [
+  { title: "Q4 product launch", format: "Landscape", time: "2 days ago" },
+  { title: "Weekly metrics report", format: "Document", time: "5 days ago" },
+  { title: "Bitcoin treasury update", format: "Square", time: "1 week ago" },
+];
+
 export default function CreateScreen({
   onCreate,
   onSkip,
@@ -214,6 +220,22 @@ export default function CreateScreen({
           <button type="button" className={styles.secondaryBtn} onClick={() => onSkip?.(format)}>
             Skip to editor
           </button>
+        </div>
+
+        <div style={{ width: "100%", marginTop: 24 }}>
+          <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
+            Recent
+          </div>
+          <div className={styles.recentGrid}>
+            {RECENT_EXAMPLES.map((r) => (
+              <button type="button" key={r.title} className={styles.recentCard}>
+                <span className={styles.recentCardTitle}>{r.title}</span>
+                <span className={styles.recentCardMeta}>
+                  {r.format} · {r.time}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </main>
     </div>
