@@ -104,6 +104,16 @@
   to { filter: hue-rotate(360deg); }
 }
 
+/* Follows the pointer (JS sets transform on pointermove) — separate
+   from .colorWorm's own transform so the drift-toward-cursor and the
+   self-morph animation don't fight over the same property. */
+.wormTrack {
+  position: absolute;
+  inset: 0;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
 .colorWorm {
   position: absolute;
   left: -20%;
