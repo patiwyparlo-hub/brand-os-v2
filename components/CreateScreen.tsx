@@ -26,18 +26,13 @@ export default function CreateScreen({
   const isLight = contentTheme === "world";
   const pageRef = useRef<HTMLDivElement>(null);
   const cursorGlowRef = useRef<HTMLDivElement>(null);
-  const wormTrackRef = useRef<HTMLDivElement>(null);
 
-  // Both the color ribbon and the bright hotspot follow the pointer —
-  // writing straight to the DOM (no React state) so it stays smooth at
-  // 60fps. The ribbon's own shape keeps morphing on its own (CSS
-  // keyframes on .colorWorm), but its *position* is driven here, via a
-  // wrapping .wormTrack element so the two transforms don't collide.
+  // Cursor hotspot that trails the pointer. Writes straight to the DOM
+  // (no React state) so it stays smooth at 60fps.
   useEffect(() => {
     const page = pageRef.current;
     const glow = cursorGlowRef.current;
-    const wormTrack = wormTrackRef.current;
-    if (!page || !glow || !wormTrack) return;
+    if (!page || !glow) return;
 
     let raf = 0;
     function onMove(e: PointerEvent) {
@@ -48,12 +43,6 @@ export default function CreateScreen({
       raf = requestAnimationFrame(() => {
         glow!.style.transform = `translate3d(${x}px, ${y}px, 0)`;
         glow!.style.opacity = "1";
-
-        // Ribbon drifts toward wherever the cursor is, offset from the
-        // page center, scaled down so it glides rather than snaps.
-        const dx = (x / Math.max(rect.width, 1) - 0.5) * rect.width * 0.5;
-        const dy = (y / Math.max(rect.height, 1) - 0.5) * rect.height * 0.6;
-        wormTrack!.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
       });
     }
     function onLeave() {
@@ -74,9 +63,6 @@ export default function CreateScreen({
       <div className={`${styles.layer} ${styles.grid}`} />
       <div className={`${styles.layer} ${styles.scrim}`} />
       <div className={styles.auroraLayer}>
-        <div ref={wormTrackRef} className={styles.wormTrack}>
-          <div className={styles.colorWorm} />
-        </div>
         <div ref={cursorGlowRef} className={styles.cursorGlow} />
       </div>
 
