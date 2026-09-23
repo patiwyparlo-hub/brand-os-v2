@@ -25,36 +25,103 @@ export default function CreateScreen({
   const toggleContentTheme = onToggleTheme ?? toggleOwnTheme;
   const isLight = contentTheme === "world";
   const pageRef = useRef<HTMLDivElement>(null);
-  const cursorGlowRef = useRef<HTMLDivElement>(null);
+  const blobPurpleRef = useRef<HTMLDivElement>(null);
+  const blobOrangeRef = useRef<HTMLDivElement>(null);
 
-  // Cursor hotspot that trails the pointer. Writes straight to the DOM
-  // (no React state) so it stays smooth at 60fps.
+  // Hero background blobs drift toward the pointer with inertia (each
+  // eased independently, at its own offset and lag, so they don't move
+  // as one rigid unit). Position is written straight to the DOM every
+  // frame — no React state — so it stays smooth regardless of render
+  // cost elsewhere on the page.
   useEffect(() => {
     const page = pageRef.current;
-    const glow = cursorGlowRef.current;
-    if (!page || !glow) return;
+    const blobs = [
+      { el: blobPurpleRef.current, offsetX: -0.1, offsetY: -0.08, lerp: 0.045 },
+      { el: blobOrangeRef.current, offsetX: 0.12, offsetY: 0.1, lerp: 0.07 },
+    ];
+    if (!page || blobs.some((b) => !b.el)) return;
 
-    let raf = 0;
-    function onMove(e: PointerEvent) {
+    const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let reduceMotion = reduceMotionQuery.matches;
+
+    let target = { x: 0, y: 0 };
+    const current = blobs.map(() => ({ x: 0, y: 0 }));
+    let initialized = false;
+
+    // Resting position (no pointer yet, or pointer left the section) —
+    // a bit above center, roughly where the headline sits.
+    function restingTarget() {
       const rect = page!.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        glow!.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-        glow!.style.opacity = "1";
+      return { x: rect.width * 0.5, y: rect.height * 0.38 };
+    }
+
+    function place(immediate: boolean) {
+      const rect = page!.getBoundingClientRect();
+      blobs.forEach((b, i) => {
+        const tx = target.x + b.offsetX * rect.width;
+        const ty = target.y + b.offsetY * rect.height;
+        if (immediate) current[i] = { x: tx, y: ty };
+        const el = b.el!;
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        el.style.transform = `translate3d(${current[i].x - w / 2}px, ${current[i].y - h / 2}px, 0)`;
       });
     }
+
+    function resetTarget() {
+      target = restingTarget();
+      if (!initialized) {
+        place(true);
+        initialized = true;
+      } else if (reduceMotion) {
+        place(true);
+      }
+    }
+    resetTarget();
+
+    function onMove(e: PointerEvent) {
+      const rect = page!.getBoundingClientRect();
+      target = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      if (reduceMotion) place(true);
+    }
     function onLeave() {
-      glow!.style.opacity = "0";
+      resetTarget();
+    }
+    function onMotionChange() {
+      reduceMotion = reduceMotionQuery.matches;
+      if (reduceMotion) place(true);
     }
 
     page.addEventListener("pointermove", onMove);
     page.addEventListener("pointerleave", onLeave);
+    window.addEventListener("resize", resetTarget);
+    reduceMotionQuery.addEventListener("change", onMotionChange);
+
+    let raf = 0;
+    if (!reduceMotion) {
+      const tick = () => {
+        const rect = page!.getBoundingClientRect();
+        blobs.forEach((b, i) => {
+          const tx = target.x + b.offsetX * rect.width;
+          const ty = target.y + b.offsetY * rect.height;
+          current[i].x += (tx - current[i].x) * b.lerp;
+          current[i].y += (ty - current[i].y) * b.lerp;
+          const el = b.el!;
+          const w = el.offsetWidth;
+          const h = el.offsetHeight;
+          el.style.transform = `translate3d(${current[i].x - w / 2}px, ${current[i].y - h / 2}px, 0)`;
+        });
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }
+
     return () => {
+      cancelAnimationFrame(raf);
       page.removeEventListener("pointermove", onMove);
       page.removeEventListener("pointerleave", onLeave);
-      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resetTarget);
+      reduceMotionQuery.removeEventListener("change", onMotionChange);
     };
   }, []);
 
@@ -62,8 +129,9 @@ export default function CreateScreen({
     <div ref={pageRef} className={`${styles.page} ${isLight ? styles.light : ""}`}>
       <div className={`${styles.layer} ${styles.grid}`} />
       <div className={`${styles.layer} ${styles.scrim}`} />
-      <div className={styles.auroraLayer}>
-        <div ref={cursorGlowRef} className={styles.cursorGlow} />
+      <div className={styles.heroGlow}>
+        <div ref={blobPurpleRef} className={`${styles.heroBlob} ${styles.heroBlobPurple}`} />
+        <div ref={blobOrangeRef} className={`${styles.heroBlob} ${styles.heroBlobOrange}`} />
       </div>
 
       <header className={styles.header}>

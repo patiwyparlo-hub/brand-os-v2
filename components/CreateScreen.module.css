@@ -79,43 +79,61 @@
   background: linear-gradient(105deg, rgba(6, 6, 7, 0.62) 0%, rgba(6, 6, 7, 0.28) 45%, rgba(0, 0, 0, 0) 78%);
 }
 
-/* Cursor spotlight — hue cycles continuously via auroraHue while the
-   hotspot itself (.cursorGlow) tracks the pointer. */
-.auroraLayer {
+/* Hero background glow — two large, soft blobs (violet + warm orange)
+   that cover the whole section and drift toward the pointer with
+   inertia (position is lerped every frame in JS; see the useEffect in
+   CreateScreen.tsx). Shape keeps morphing gently on its own via
+   blobMorph so it never looks static even at rest. */
+.heroGlow {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
-  animation: auroraHue 30s linear infinite;
 }
 
-@keyframes auroraHue {
-  from { filter: hue-rotate(0deg); }
-  to { filter: hue-rotate(360deg); }
-}
-
-.cursorGlow {
+.heroBlob {
   position: absolute;
   top: 0;
   left: 0;
-  width: 200px;
-  height: 200px;
-  margin-left: -100px;
-  margin-top: -100px;
-  border-radius: 50%;
-  background: hsl(320, 95%, 72%);
-  filter: blur(45px);
-  mix-blend-mode: screen;
-  pointer-events: none;
-  opacity: 0;
-  will-change: transform, opacity;
-  transition: opacity 400ms var(--ease-out), transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 46% 54% 60% 40% / 50% 45% 55% 50%;
+  will-change: transform;
+  animation: blobMorph 24s ease-in-out infinite alternate;
 }
 
-.page.light .cursorGlow {
+.heroBlobPurple {
+  width: 64vmax;
+  height: 64vmax;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.55) 0%, rgba(126, 34, 206, 0.26) 42%, rgba(0, 0, 0, 0) 72%);
+  filter: blur(110px);
+  mix-blend-mode: screen;
+}
+
+.heroBlobOrange {
+  width: 54vmax;
+  height: 54vmax;
+  background: radial-gradient(circle, rgba(255, 158, 87, 0.5) 0%, rgba(234, 88, 12, 0.22) 42%, rgba(0, 0, 0, 0) 72%);
+  filter: blur(100px);
+  mix-blend-mode: screen;
+  animation-duration: 19s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes blobMorph {
+  0% { border-radius: 46% 54% 60% 40% / 50% 45% 55% 50%; }
+  50% { border-radius: 58% 42% 45% 55% / 42% 58% 42% 58%; }
+  100% { border-radius: 50% 50% 42% 58% / 58% 42% 58% 42%; }
+}
+
+.page.light .heroBlob {
   mix-blend-mode: normal;
-  background: hsla(320, 95%, 72%, 0.4);
+  opacity: 0.34;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroBlob {
+    animation: none;
+  }
 }
 
 .header {
