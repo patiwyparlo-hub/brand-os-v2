@@ -248,8 +248,7 @@ export default function CreateScreen({
           <button
             type="button"
             className={styles.primaryBtn}
-            disabled={!format}
-            onClick={() => format && onCreate?.(brief, "", format)}
+            onClick={() => onCreate?.(brief, "", format ?? "square")}
           >
             <SparklesIcon />
             Generate directions
@@ -257,8 +256,7 @@ export default function CreateScreen({
           <button
             type="button"
             className={styles.secondaryBtn}
-            disabled={!format}
-            onClick={() => format && onSkip?.(format)}
+            onClick={() => onSkip?.(format ?? "square")}
           >
             Skip to editor
           </button>
