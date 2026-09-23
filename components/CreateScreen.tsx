@@ -43,6 +43,11 @@ export default function CreateScreen({
       raf = requestAnimationFrame(() => {
         glow!.style.transform = `translate3d(${x}px, ${y}px, 0)`;
         glow!.style.opacity = "1";
+        // Hue drifts with pointer position — indigo/blue on the left,
+        // through violet, into magenta/pink on the right; row position
+        // nudges it further so the color keeps shifting as you move.
+        const hue = 215 + (x / Math.max(rect.width, 1)) * 130 + (y / Math.max(rect.height, 1)) * 20;
+        glow!.style.setProperty("--glow-hue", hue.toFixed(1));
       });
     }
     function onLeave() {

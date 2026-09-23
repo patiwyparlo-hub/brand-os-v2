@@ -89,6 +89,7 @@
 /* Cursor spotlight — same indigo/periwinkle palette as designcode.io's
    card-hover glow, just following the pointer across the whole page. */
 .cursorGlow {
+  --glow-hue: 235;
   position: absolute;
   top: 0;
   left: 0;
@@ -99,27 +100,27 @@
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(139, 148, 255, 0.38) 0%,
-    rgba(99, 102, 241, 0.2) 35%,
-    rgba(76, 63, 168, 0.08) 55%,
-    rgba(0, 0, 0, 0) 72%
+    hsla(var(--glow-hue), 95%, 76%, 0.4) 0%,
+    hsla(var(--glow-hue), 88%, 62%, 0.22) 35%,
+    hsla(var(--glow-hue), 70%, 40%, 0.09) 55%,
+    hsla(var(--glow-hue), 70%, 40%, 0) 72%
   );
   mix-blend-mode: screen;
   pointer-events: none;
   opacity: 0;
   z-index: 0;
   will-change: transform, opacity;
-  transition: opacity 300ms var(--ease-out), transform 120ms linear;
+  transition: opacity 300ms var(--ease-out), transform 120ms linear, background 60ms linear;
 }
 
 .page.light .cursorGlow {
   mix-blend-mode: normal;
   background: radial-gradient(
     circle,
-    rgba(99, 102, 241, 0.16) 0%,
-    rgba(99, 102, 241, 0.08) 35%,
-    rgba(76, 63, 168, 0.04) 55%,
-    rgba(0, 0, 0, 0) 72%
+    hsla(var(--glow-hue), 90%, 60%, 0.18) 0%,
+    hsla(var(--glow-hue), 85%, 55%, 0.09) 35%,
+    hsla(var(--glow-hue), 70%, 40%, 0.04) 55%,
+    hsla(var(--glow-hue), 70%, 40%, 0) 72%
   );
 }
 
