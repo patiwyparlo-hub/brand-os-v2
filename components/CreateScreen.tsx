@@ -67,7 +67,7 @@ export default function CreateScreen({
       <div className={`${styles.layer} ${styles.grid}`} />
       <div className={`${styles.layer} ${styles.scrim}`} />
       <div className={styles.auroraLayer}>
-        <div className={styles.ambientBlob} />
+        <div className={styles.colorWorm} />
         <div ref={cursorGlowRef} className={styles.cursorGlow} />
       </div>
 
