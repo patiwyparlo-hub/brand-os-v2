@@ -27,8 +27,11 @@ export default function CreateScreen({
   const pageRef = useRef<HTMLDivElement>(null);
   const cursorGlowRef = useRef<HTMLDivElement>(null);
 
-  // Spotlight that trails the cursor, like designcode.io's card-hover glow.
+  // Cursor hotspot that trails the pointer, like designcode.io's hero glow.
   // Writes directly to the DOM (no React state) so it stays smooth at 60fps.
+  // Its color isn't computed here — it lives inside .auroraLayer, which
+  // continuously hue-rotates everything inside it (see the CSS animation),
+  // so the hotspot always matches whatever the ambient wash is doing.
   useEffect(() => {
     const page = pageRef.current;
     const glow = cursorGlowRef.current;
@@ -43,11 +46,6 @@ export default function CreateScreen({
       raf = requestAnimationFrame(() => {
         glow!.style.transform = `translate3d(${x}px, ${y}px, 0)`;
         glow!.style.opacity = "1";
-        // Hue drifts with pointer position — indigo/blue on the left,
-        // through violet, into magenta/pink on the right; row position
-        // nudges it further so the color keeps shifting as you move.
-        const hue = 215 + (x / Math.max(rect.width, 1)) * 130 + (y / Math.max(rect.height, 1)) * 20;
-        glow!.style.setProperty("--glow-hue", hue.toFixed(1));
       });
     }
     function onLeave() {
@@ -68,7 +66,10 @@ export default function CreateScreen({
       <div className={`${styles.layer} ${styles.glow}`} />
       <div className={`${styles.layer} ${styles.grid}`} />
       <div className={`${styles.layer} ${styles.scrim}`} />
-      <div ref={cursorGlowRef} className={styles.cursorGlow} />
+      <div className={styles.auroraLayer}>
+        <div className={styles.ambientBlob} />
+        <div ref={cursorGlowRef} className={styles.cursorGlow} />
+      </div>
 
       <header className={styles.header}>
         <div className={styles.brand}>

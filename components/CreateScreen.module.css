@@ -86,41 +86,74 @@
   background: linear-gradient(105deg, rgba(6, 6, 7, 0.62) 0%, rgba(6, 6, 7, 0.28) 45%, rgba(0, 0, 0, 0) 78%);
 }
 
-/* Cursor spotlight — same indigo/periwinkle palette as designcode.io's
-   card-hover glow, just following the pointer across the whole page. */
+/* Aurora — designcode.io's hero glow: a big, slow, continuously
+   hue-rotating color wash (.ambientBlob) with a brighter hotspot that
+   trails the cursor (.cursorGlow). Both live inside .auroraLayer so a
+   single filter animation recolors them together — the hotspot always
+   matches whatever mood the ambient wash is in at that moment. */
+.auroraLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  animation: auroraHue 26s linear infinite;
+}
+
+@keyframes auroraHue {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(360deg); }
+}
+
+.ambientBlob {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(38% 42% at 20% 28%, rgba(76, 111, 255, 0.55), rgba(0, 0, 0, 0) 70%),
+    radial-gradient(34% 40% at 72% 62%, rgba(199, 76, 255, 0.42), rgba(0, 0, 0, 0) 70%),
+    radial-gradient(30% 34% at 12% 82%, rgba(255, 138, 61, 0.32), rgba(0, 0, 0, 0) 70%);
+  filter: blur(90px);
+  mix-blend-mode: screen;
+}
+
+.page.light .ambientBlob {
+  opacity: 0.32;
+  mix-blend-mode: normal;
+  filter: blur(110px);
+}
+
 .cursorGlow {
-  --glow-hue: 235;
   position: absolute;
   top: 0;
   left: 0;
-  width: 640px;
-  height: 640px;
-  margin-left: -320px;
-  margin-top: -320px;
+  width: 980px;
+  height: 980px;
+  margin-left: -490px;
+  margin-top: -490px;
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    hsla(var(--glow-hue), 95%, 76%, 0.4) 0%,
-    hsla(var(--glow-hue), 88%, 62%, 0.22) 35%,
-    hsla(var(--glow-hue), 70%, 40%, 0.09) 55%,
-    hsla(var(--glow-hue), 70%, 40%, 0) 72%
+    rgba(226, 130, 255, 0.55) 0%,
+    rgba(139, 148, 255, 0.3) 30%,
+    rgba(99, 102, 241, 0.14) 50%,
+    rgba(0, 0, 0, 0) 70%
   );
+  filter: blur(30px);
   mix-blend-mode: screen;
   pointer-events: none;
   opacity: 0;
-  z-index: 0;
   will-change: transform, opacity;
-  transition: opacity 300ms var(--ease-out), transform 120ms linear, background 60ms linear;
+  transition: opacity 400ms var(--ease-out), transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .page.light .cursorGlow {
   mix-blend-mode: normal;
   background: radial-gradient(
     circle,
-    hsla(var(--glow-hue), 90%, 60%, 0.18) 0%,
-    hsla(var(--glow-hue), 85%, 55%, 0.09) 35%,
-    hsla(var(--glow-hue), 70%, 40%, 0.04) 55%,
-    hsla(var(--glow-hue), 70%, 40%, 0) 72%
+    rgba(226, 130, 255, 0.22) 0%,
+    rgba(139, 148, 255, 0.14) 30%,
+    rgba(99, 102, 241, 0.07) 50%,
+    rgba(0, 0, 0, 0) 70%
   );
 }
 
