@@ -251,12 +251,12 @@
   justify-content: center;
   gap: 28px;
   width: 100%;
-  min-height: calc(100vh - 88px);
+  min-height: calc(100vh - 208px);
 }
 
 .recentSection {
   width: 100%;
-  margin-top: 14vh;
+  margin-top: 6vh;
 }
 
 .eyebrow {
