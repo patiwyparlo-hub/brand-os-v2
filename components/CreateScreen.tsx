@@ -25,98 +25,135 @@ export default function CreateScreen({
   onToggleTheme?: () => void;
 }) {
   const [brief, setBrief] = useState("");
-  const [format, setFormat] = useState<FormatId>("square");
+  const [format, setFormat] = useState<FormatId | null>(null);
   const [ownTheme, toggleOwnTheme] = useContentTheme();
   const contentTheme = theme ?? ownTheme;
   const toggleContentTheme = onToggleTheme ?? toggleOwnTheme;
   const isLight = contentTheme === "world";
   const pageRef = useRef<HTMLDivElement>(null);
-  const blobPurpleRef = useRef<HTMLDivElement>(null);
-  const blobOrangeRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Hero background blobs drift toward the pointer with inertia (each
-  // eased independently, at its own offset and lag, so they don't move
-  // as one rigid unit). Position is written straight to the DOM every
-  // frame — no React state — so it stays smooth regardless of render
+  // The color blobs behind the hero stay put — a canvas on top paints an
+  // opaque cover over them and erases a soft round "brush dab" wherever
+  // the (lerped, lagging) pointer has been, uncovering the color like a
+  // brush stroke. Each frame also re-darkens the whole canvas by a hair,
+  // so older strokes slowly fade back to covered instead of the whole
+  // section staying permanently revealed. Runs on the canvas 2D context
+  // directly — no React state — so it stays smooth regardless of render
   // cost elsewhere on the page.
   useEffect(() => {
     const page = pageRef.current;
-    const blobs = [
-      { el: blobPurpleRef.current, offsetX: -0.1, offsetY: -0.08, lerp: 0.045 },
-      { el: blobOrangeRef.current, offsetX: 0.12, offsetY: 0.1, lerp: 0.07 },
-    ];
-    if (!page || blobs.some((b) => !b.el)) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!page || !canvas || !ctx) return;
 
     const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reduceMotion = reduceMotionQuery.matches;
 
+    const brushRadius = 170;
+    const fadeAlpha = 0.025;
+    const lerp = 0.14;
+
     let target = { x: 0, y: 0 };
-    const current = blobs.map(() => ({ x: 0, y: 0 }));
-    let initialized = false;
+    let current = { x: 0, y: 0 };
+    let width = 0;
+    let height = 0;
+
+    function paintCover() {
+      const stops = isLight
+        ? ["#fcfcfa", "#f7f7f4", "#f0efe9", "#f0efe9"]
+        : ["#060607", "#0b0b0e", "#131318", "#17161a"];
+      const grad = ctx!.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, stops[0]);
+      grad.addColorStop(0.46, stops[1]);
+      grad.addColorStop(0.78, stops[2]);
+      grad.addColorStop(1, stops[3]);
+      ctx!.globalCompositeOperation = "source-over";
+      ctx!.fillStyle = grad;
+      ctx!.fillRect(0, 0, width, height);
+    }
+
+    function dab(x: number, y: number) {
+      const grad = ctx!.createRadialGradient(x, y, 0, x, y, brushRadius);
+      grad.addColorStop(0, "rgba(0, 0, 0, 1)");
+      grad.addColorStop(0.6, "rgba(0, 0, 0, 0.55)");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx!.globalCompositeOperation = "destination-out";
+      ctx!.fillStyle = grad;
+      ctx!.beginPath();
+      ctx!.arc(x, y, brushRadius, 0, Math.PI * 2);
+      ctx!.fill();
+    }
 
     // Resting position (no pointer yet, or pointer left the section) —
     // a bit above center, roughly where the headline sits.
     function restingTarget() {
-      const rect = page!.getBoundingClientRect();
-      return { x: rect.width * 0.5, y: rect.height * 0.38 };
+      return { x: width * 0.5, y: height * 0.38 };
     }
 
-    function place(immediate: boolean) {
+    function resize() {
       const rect = page!.getBoundingClientRect();
-      blobs.forEach((b, i) => {
-        const tx = target.x + b.offsetX * rect.width;
-        const ty = target.y + b.offsetY * rect.height;
-        if (immediate) current[i] = { x: tx, y: ty };
-        const el = b.el!;
-        const w = el.offsetWidth;
-        const h = el.offsetHeight;
-        el.style.transform = `translate3d(${current[i].x - w / 2}px, ${current[i].y - h / 2}px, 0)`;
-      });
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = rect.width;
+      height = rect.height;
+      canvas!.width = width * dpr;
+      canvas!.height = height * dpr;
+      canvas!.style.width = `${width}px`;
+      canvas!.style.height = `${height}px`;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      paintCover();
     }
 
-    function resetTarget() {
-      target = restingTarget();
-      if (!initialized) {
-        place(true);
-        initialized = true;
-      } else if (reduceMotion) {
-        place(true);
-      }
-    }
-    resetTarget();
+    resize();
+    target = restingTarget();
+    current = { ...target };
+    dab(current.x, current.y);
 
     function onMove(e: PointerEvent) {
       const rect = page!.getBoundingClientRect();
       target = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      if (reduceMotion) place(true);
+      if (reduceMotion) {
+        current = { ...target };
+        paintCover();
+        dab(current.x, current.y);
+      }
     }
     function onLeave() {
-      resetTarget();
+      target = restingTarget();
+      if (reduceMotion) {
+        current = { ...target };
+        paintCover();
+        dab(current.x, current.y);
+      }
+    }
+    function onResize() {
+      resize();
+      target = restingTarget();
+      current = { ...target };
+      dab(current.x, current.y);
     }
     function onMotionChange() {
       reduceMotion = reduceMotionQuery.matches;
-      if (reduceMotion) place(true);
+      if (reduceMotion) {
+        paintCover();
+        dab(current.x, current.y);
+      }
     }
 
     page.addEventListener("pointermove", onMove);
     page.addEventListener("pointerleave", onLeave);
-    window.addEventListener("resize", resetTarget);
+    window.addEventListener("resize", onResize);
     reduceMotionQuery.addEventListener("change", onMotionChange);
 
     let raf = 0;
     if (!reduceMotion) {
       const tick = () => {
-        const rect = page!.getBoundingClientRect();
-        blobs.forEach((b, i) => {
-          const tx = target.x + b.offsetX * rect.width;
-          const ty = target.y + b.offsetY * rect.height;
-          current[i].x += (tx - current[i].x) * b.lerp;
-          current[i].y += (ty - current[i].y) * b.lerp;
-          const el = b.el!;
-          const w = el.offsetWidth;
-          const h = el.offsetHeight;
-          el.style.transform = `translate3d(${current[i].x - w / 2}px, ${current[i].y - h / 2}px, 0)`;
-        });
+        current.x += (target.x - current.x) * lerp;
+        current.y += (target.y - current.y) * lerp;
+        ctx!.globalCompositeOperation = "source-over";
+        ctx!.fillStyle = isLight ? `rgba(247, 247, 244, ${fadeAlpha})` : `rgba(11, 11, 14, ${fadeAlpha})`;
+        ctx!.fillRect(0, 0, width, height);
+        dab(current.x, current.y);
         raf = requestAnimationFrame(tick);
       };
       raf = requestAnimationFrame(tick);
@@ -126,18 +163,19 @@ export default function CreateScreen({
       cancelAnimationFrame(raf);
       page.removeEventListener("pointermove", onMove);
       page.removeEventListener("pointerleave", onLeave);
-      window.removeEventListener("resize", resetTarget);
+      window.removeEventListener("resize", onResize);
       reduceMotionQuery.removeEventListener("change", onMotionChange);
     };
-  }, []);
+  }, [isLight]);
 
   return (
     <div ref={pageRef} className={`${styles.page} ${isLight ? styles.light : ""}`}>
       <div className={`${styles.layer} ${styles.grid}`} />
       <div className={`${styles.layer} ${styles.scrim}`} />
       <div className={styles.heroGlow}>
-        <div ref={blobPurpleRef} className={`${styles.heroBlob} ${styles.heroBlobPurple}`} />
-        <div ref={blobOrangeRef} className={`${styles.heroBlob} ${styles.heroBlobOrange}`} />
+        <div className={`${styles.heroBlob} ${styles.heroBlobPurple}`} />
+        <div className={`${styles.heroBlob} ${styles.heroBlobOrange}`} />
+        <canvas ref={canvasRef} className={styles.heroCanvas} />
       </div>
 
       <header className={styles.header}>
@@ -161,13 +199,12 @@ export default function CreateScreen({
       </header>
 
       <main className={styles.main}>
+        <div className={styles.heroGroup}>
+        <div className={styles.greeting}>Hi, Patrycja.</div>
+
         <h1 className={styles.heading}>
           What are we <em>creating</em> today?
         </h1>
-
-        <p className={styles.sub}>
-          One sentence or a full brief. Brand OS turns it into an on-brand design.
-        </p>
 
         <div style={{ width: "100%", marginTop: 16 }}>
           <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
@@ -213,16 +250,27 @@ export default function CreateScreen({
         </div>
 
         <div className={styles.ctaRow}>
-          <button type="button" className={styles.primaryBtn} onClick={() => onCreate?.(brief, "", format)}>
+          <button
+            type="button"
+            className={styles.primaryBtn}
+            disabled={!format}
+            onClick={() => format && onCreate?.(brief, "", format)}
+          >
             <SparklesIcon />
             Generate directions
           </button>
-          <button type="button" className={styles.secondaryBtn} onClick={() => onSkip?.(format)}>
+          <button
+            type="button"
+            className={styles.secondaryBtn}
+            disabled={!format}
+            onClick={() => format && onSkip?.(format)}
+          >
             Skip to editor
           </button>
         </div>
+        </div>
 
-        <div style={{ width: "100%", marginTop: 24 }}>
+        <div className={styles.recentSection}>
           <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
             Recent
           </div>
