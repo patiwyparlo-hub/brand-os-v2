@@ -36,11 +36,10 @@ export default function CreateScreen({
   // The color blobs behind the hero stay put — a canvas on top paints an
   // opaque cover over them and erases a soft round "brush dab" wherever
   // the (lerped, lagging) pointer has been, uncovering the color like a
-  // brush stroke. Each frame also re-darkens the whole canvas by a hair,
-  // so older strokes slowly fade back to covered instead of the whole
-  // section staying permanently revealed. Runs on the canvas 2D context
-  // directly — no React state — so it stays smooth regardless of render
-  // cost elsewhere on the page.
+  // brush stroke. Erased areas stay revealed permanently — the canvas is
+  // never re-covered — so the painted trail accumulates as the pointer
+  // moves around. Runs on the canvas 2D context directly — no React
+  // state — so it stays smooth regardless of render cost elsewhere.
   useEffect(() => {
     const page = pageRef.current;
     const canvas = canvasRef.current;
@@ -51,7 +50,6 @@ export default function CreateScreen({
     let reduceMotion = reduceMotionQuery.matches;
 
     const brushRadius = 170;
-    const fadeAlpha = 0.025;
     const lerp = 0.14;
 
     let target = { x: 0, y: 0 };
@@ -150,9 +148,6 @@ export default function CreateScreen({
       const tick = () => {
         current.x += (target.x - current.x) * lerp;
         current.y += (target.y - current.y) * lerp;
-        ctx!.globalCompositeOperation = "source-over";
-        ctx!.fillStyle = isLight ? `rgba(247, 247, 244, ${fadeAlpha})` : `rgba(11, 11, 14, ${fadeAlpha})`;
-        ctx!.fillRect(0, 0, width, height);
         dab(current.x, current.y);
         raf = requestAnimationFrame(tick);
       };
