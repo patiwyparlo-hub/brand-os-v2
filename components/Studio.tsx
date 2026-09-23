@@ -275,7 +275,7 @@ export default function Studio() {
     return (
       <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
         <div className={styles.topbar}>
-          <div className={styles.brand}>
+          <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
             <span>Strategy</span>
             <span style={{ color: "var(--ink-tertiary)" }}>
               Brand <em>OS</em>
@@ -283,10 +283,6 @@ export default function Studio() {
           </div>
           <div className={styles.headerRight}>
             <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
-            <div className={styles.badge}>
-              <span className={styles.badgeDot} />
-              Internal Preview
-            </div>
           </div>
         </div>
         <div className={styles.loadingWrap}>
@@ -362,7 +358,7 @@ export default function Studio() {
   return (
     <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
       <div className={styles.topbar}>
-        <div className={styles.brand}>
+        <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
           <span>Strategy</span>
           <span style={{ color: "var(--ink-tertiary)" }}>
             Brand <em>OS</em>

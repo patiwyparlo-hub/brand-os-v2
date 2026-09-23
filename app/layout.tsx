@@ -9,17 +9,17 @@ export const metadata: Metadata = {
 const THEME_INIT = `
 (function () {
   try {
-    var t = localStorage.getItem('brandos-content-theme') || 'world';
+    var t = localStorage.getItem('brandos-content-theme') || 'corporations';
     document.documentElement.setAttribute('data-content-theme', t);
   } catch (e) {
-    document.documentElement.setAttribute('data-content-theme', 'world');
+    document.documentElement.setAttribute('data-content-theme', 'corporations');
   }
 })();
 `;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-content-theme="world" suppressHydrationWarning>
+    <html lang="en" data-content-theme="corporations" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link

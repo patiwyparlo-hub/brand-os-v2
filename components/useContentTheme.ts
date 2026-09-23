@@ -12,7 +12,7 @@ export function useContentTheme(): [ContentTheme, () => void] {
   const [theme, setTheme] = useState<ContentTheme>("corporations");
 
   useEffect(() => {
-    const current = (document.documentElement.getAttribute("data-content-theme") as ContentTheme) || "world";
+    const current = (document.documentElement.getAttribute("data-content-theme") as ContentTheme) || "corporations";
     setTheme(current);
   }, []);
 

@@ -151,10 +151,6 @@ export default function CreateScreen({
           >
             {isLight ? <MoonIcon /> : <SunIcon />}
           </button>
-          <div className={styles.badge}>
-            <span className={styles.badgeDot} />
-            Internal Preview
-          </div>
         </div>
       </header>
 
@@ -167,7 +163,7 @@ export default function CreateScreen({
           One sentence or a full brief. Brand OS turns it into an on-brand design.
         </p>
 
-        <div style={{ width: "100%", marginTop: 24 }}>
+        <div style={{ width: "100%", marginTop: 16 }}>
           <div className={styles.sectionLabel} style={{ marginBottom: 12 }}>
             1. Select format
           </div>
@@ -221,7 +217,7 @@ export default function CreateScreen({
         </div>
       </main>
 
-      <footer className={styles.footer}>Strategy · Brand OS · Internal Preview</footer>
+      <footer className={styles.footer}>Strategy · Brand OS</footer>
     </div>
   );
 }
