@@ -436,7 +436,11 @@ export default function Studio() {
             >
               <img className={styles.logoImg} src={LOGO_BY_THEME[design.theme]} alt="Strategy" />
 
-              <div className={`${styles.frameMain} ${design.format !== "square" && design.format !== "story" ? styles.frameMainNarrow : ""}`}>
+              <div
+                className={`${styles.frameMain} ${
+                  design.format !== "square" && design.format !== "story" ? styles.frameMainNarrow : ""
+                } ${design.format === "story" ? styles.frameMainCentered : ""}`}
+              >
                 <div
                   className={`${styles.frameTitle} ${styles.frameInk}`}
                   contentEditable

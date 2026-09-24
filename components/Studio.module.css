@@ -449,6 +449,14 @@
   max-width: 68%;
 }
 
+/* Story (9:16): the reference centers the copy block in the whole canvas
+   instead of anchoring it just under the logo — a tall, narrow frame
+   looks top-heavy and awkward with a big empty gap only at the bottom. */
+.frameMainCentered {
+  justify-content: center;
+  margin-top: 0;
+}
+
 /* Banner (ultra-wide): logo top-right, copy anchored top-left instead of
    vertically centered — centering reads oddly in a short, wide strip. */
 .frameBanner {
