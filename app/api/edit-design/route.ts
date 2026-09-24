@@ -21,7 +21,13 @@ const TOOL: Anthropic.Tool = {
       },
       titleInk: { type: "string", description: "Plain lead-in line of the headline (page's normal ink color)." },
       titleAccent: { type: "string", description: "Bold accent line of the headline (brand accent color)." },
-      sub: { type: "string", description: "Supporting copy for the 'statement' layout — up to three lines separated by \\n." },
+      sub: {
+        type: "array",
+        description: "Supporting copy for the 'statement' layout — exactly three short lines.",
+        items: { type: "string" },
+        minItems: 3,
+        maxItems: 3,
+      },
       cta: { type: "string", description: "Call-to-action button text." },
       stats: {
         type: "array",
@@ -112,7 +118,9 @@ Call edit_design with only the fields that should change based on the user's lat
       return NextResponse.json({ patch: null, reply: textBlock?.type === "text" ? textBlock.text : "Not sure what to change — try being more specific." });
     }
 
-    return NextResponse.json({ patch: block.input, reply: null });
+    const patch = block.input as Record<string, unknown>;
+    if (Array.isArray(patch.sub)) patch.sub = (patch.sub as string[]).join("\n");
+    return NextResponse.json({ patch, reply: null });
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Edit request failed." }, { status: 502 });
   }

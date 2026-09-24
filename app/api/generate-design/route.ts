@@ -21,8 +21,11 @@ const TOOL: Anthropic.Tool = {
         description: "The bold, punchy headline phrase — the most attention-grabbing part of the design, shown in the brand's signature accent color.",
       },
       sub: {
-        type: "string",
-        description: "Exactly three short supporting lines that elaborate on the message, separated by \\n. Each line should be brief enough to read at a glance.",
+        type: "array",
+        description: "Exactly three short supporting lines that elaborate on the message. Each line should be brief enough to read at a glance.",
+        items: { type: "string" },
+        minItems: 3,
+        maxItems: 3,
       },
     },
     required: ["titleInk", "titleAccent", "sub"],
@@ -73,8 +76,8 @@ Call set_design_copy with your finished copy. Keep everything short — this is 
       return NextResponse.json({ error: "The assistant didn't return design copy." }, { status: 502 });
     }
 
-    const copy = block.input as { titleInk: string; titleAccent: string; sub: string };
-    return NextResponse.json(copy);
+    const copy = block.input as { titleInk: string; titleAccent: string; sub: string[] };
+    return NextResponse.json({ titleInk: copy.titleInk, titleAccent: copy.titleAccent, sub: copy.sub.join("\n") });
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Design copy request failed." }, { status: 502 });
   }
