@@ -422,9 +422,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 18px;
-  margin-top: 18px;
+  margin-top: calc(10 * var(--cqmin));
 }
 
 .frameMainNarrow {
