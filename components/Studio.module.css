@@ -543,6 +543,13 @@
   cursor: text;
 }
 
+/* On an orange canvas an orange button disappears into the background —
+   the reference designs swap it for black with white text instead. */
+.frameThemeOrange .ctaBtn {
+  background: #0a0a0b;
+  color: #ffffff;
+}
+
 .urlText {
   color: var(--accent);
   font-weight: 600;

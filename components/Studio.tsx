@@ -414,7 +414,7 @@ export default function Studio() {
                   onBlur={(e) => commit({ titleInk: "", titleAccent: e.currentTarget.textContent || "" })}
                 >
                   {design.titleInk}
-                  <span className={styles.frameInk} style={{ color: "var(--accent)" }}>
+                  <span className={styles.accent}>
                     {design.titleAccent}
                   </span>
                 </div>
