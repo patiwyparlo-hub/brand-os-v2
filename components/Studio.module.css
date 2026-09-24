@@ -422,7 +422,7 @@
 .frameThemeDark { background: linear-gradient(162deg, #121215 0%, #070708 100%); border-color: #000; }
 .frameThemeOrange { background: linear-gradient(#fa660f 0%, #fa660f 56%, #ffffff 100%); border-color: #000; }
 
-.frameInk { color: #0a0a0b; }
+.frameInk { color: #0a0a0b; outline: none; }
 .frameThemeDark .frameInk, .frameThemeDark .frameSub, .frameThemeDark .statLabel, .frameThemeDark .benefitText, .frameThemeDark .bodyText {
   color: #ffffff;
 }
@@ -497,7 +497,7 @@
   border-radius: 4px;
 }
 
-.frameTitle .accent { color: var(--accent); }
+.frameTitle .accent { color: var(--accent); outline: none; }
 .frameThemeOrange .frameTitle .accent { color: #ffffff; }
 
 .frameSub {

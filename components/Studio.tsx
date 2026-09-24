@@ -78,7 +78,7 @@ function defaultDesign(format: EditorFormat, brief: string): DesignState {
     format,
     theme: "white",
     layout: "statement",
-    titleInk: hasBrief ? "" : "Make something ",
+    titleInk: hasBrief ? "" : "Make something",
     titleAccent: hasBrief ? brief.trim() : "on brand",
     sub: "Click any element to edit it.\nOr describe what you want below.\nEverything stays on brand.",
     cta: "Learn More",
@@ -441,16 +441,23 @@ export default function Studio() {
                   design.format !== "square" && design.format !== "story" ? styles.frameMainNarrow : ""
                 } ${design.format === "story" ? styles.frameMainCentered : ""}`}
               >
-                <div
-                  className={`${styles.frameTitle} ${styles.frameInk}`}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => commit({ titleInk: "", titleAccent: e.currentTarget.textContent || "" })}
-                >
-                  {design.titleInk}
-                  <span className={styles.accent}>
+                <div className={styles.frameTitle}>
+                  <div
+                    className={styles.frameInk}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => commit({ titleInk: e.currentTarget.textContent || "" })}
+                  >
+                    {design.titleInk}
+                  </div>
+                  <div
+                    className={styles.accent}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => commit({ titleAccent: e.currentTarget.textContent || "" })}
+                  >
                     {design.titleAccent}
-                  </span>
+                  </div>
                 </div>
 
                 {design.layout === "statement" && design.format !== "landscape" && design.format !== "banner" && (
