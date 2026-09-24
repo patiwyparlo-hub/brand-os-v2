@@ -208,14 +208,36 @@ export default function Studio() {
     return () => ro.disconnect();
   }, [step, formatMeta.id]);
 
-  function startFromBrief(text: string, _visual: string, format: FormatId) {
+  async function startFromBrief(text: string, _visual: string, format: FormatId) {
     setBrief(text);
     setStep("loading");
     const mapped: EditorFormat = format === "document" ? "docs" : format;
     const dir = DIRECTIONS[0];
-    setHistory([{ ...defaultDesign(mapped, text), theme: dir.theme, layout: dir.layout }]);
+    const base = { ...defaultDesign(mapped, text), theme: dir.theme, layout: dir.layout };
+    setHistory([base]);
     setHistIndex(0);
-    window.setTimeout(() => setStep("editor"), 1400);
+
+    // Ask Claude to invent on-brand headline copy for the brief instead of
+    // just echoing it back verbatim. Falls back to the literal-brief
+    // version already set above if the assistant isn't configured or the
+    // request fails.
+    try {
+      const res = await fetch("/api/generate-design", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief: text }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setHistory([{ ...base, titleInk: data.titleInk, titleAccent: data.titleAccent, sub: data.sub }]);
+      } else {
+        showToast(data.error ?? "Couldn't generate copy — using your brief as the headline instead.");
+      }
+    } catch {
+      showToast("Couldn't reach the assistant — using your brief as the headline instead.");
+    } finally {
+      setStep("editor");
+    }
   }
 
   function skipToEditor(format: FormatId) {
