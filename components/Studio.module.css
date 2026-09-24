@@ -514,6 +514,7 @@
 .frameThemeOrange .benefitDot { background: #0a0a0b; }
 
 .gridWrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3%; width: 100%; }
+.frameBanner .gridWrap { grid-template-columns: repeat(6, 1fr); }
 .gridCard {
   display: flex;
   flex-direction: column;
