@@ -21,10 +21,10 @@ type EditorFormat = "square" | "landscape" | "wide" | "story" | "banner" | "docs
 // the same design looked fine in one browser and broken in another).
 const EDITOR_FORMATS: { id: EditorFormat; name: string; ratio: string; aspect: number; width: number }[] = [
   { id: "square", name: "Square", ratio: "1:1", aspect: 1 / 1, width: 1080 },
-  { id: "landscape", name: "Landscape", ratio: "1.91:1", aspect: 1.91 / 1, width: 1080 },
+  { id: "landscape", name: "Landscape", ratio: "1.91:1", aspect: 1.91 / 1, width: 1910 },
   { id: "wide", name: "Wide", ratio: "16:9", aspect: 16 / 9, width: 1920 },
   { id: "story", name: "Story", ratio: "9:16", aspect: 9 / 16, width: 1080 },
-  { id: "banner", name: "Banner", ratio: "4:1", aspect: 4 / 1, width: 1600 },
+  { id: "banner", name: "Banner", ratio: "4:1", aspect: 4 / 1, width: 1910 },
   { id: "docs", name: "Docs", ratio: "A4", aspect: 1 / 1.414, width: 1240 },
 ];
 
@@ -159,6 +159,18 @@ export default function Studio() {
     const width = formatMeta.width;
     return { width, height: Math.round(width / formatMeta.aspect) };
   }, [formatMeta]);
+
+  // Every font size in the frame is a multiple of --cqmin, normally the
+  // frame's shorter side. Banner is 4:1 -- at that aspect the shorter
+  // side (height) is so small that text/CTA shrink to near-illegible,
+  // which the reference doesn't do: its type reads at roughly the same
+  // scale as the taller formats. Give banner a taller effective basis so
+  // it doesn't get punished for being short — this only feeds font-size
+  // calc()s, not layout, so wrapping/positioning are unaffected.
+  const cqminBasis =
+    formatMeta.id === "banner"
+      ? Math.min(frameSize.width, frameSize.height * 1.6)
+      : Math.min(frameSize.width, frameSize.height);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -430,7 +442,7 @@ export default function Studio() {
                   height: frameSize.height,
                   transform: `scale(${scale})`,
                   transformOrigin: "top left",
-                  "--cqmin": `${Math.min(frameSize.width, frameSize.height) / 100}px`,
+                  "--cqmin": `${cqminBasis / 100}px`,
                 } as React.CSSProperties
               }
             >
