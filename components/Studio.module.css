@@ -457,34 +457,22 @@
   margin-top: 0;
 }
 
-/* Banner (ultra-wide): logo top-right, copy anchored top-left instead of
-   vertically centered — centering reads oddly in a short, wide strip. */
+/* Banner (ultra-wide): logo top-left with the copy stacked directly
+   below it, same as the other formats — but the CTA floats independently
+   in the top-right corner instead of sitting under the copy. */
 .frameBanner {
-  flex-direction: row;
   align-items: flex-start;
-  justify-content: space-between;
   padding: calc(6 * var(--cqmin)) calc(5 * var(--cqmin));
 }
 
-.frameBanner .logoImg {
-  order: 2;
-  align-self: flex-start;
-  height: calc(14 * var(--cqmin));
-}
-
 .frameBanner .frameMain {
-  order: 1;
-  flex: 0 1 auto;
-  justify-content: flex-start;
-  margin-top: 0;
-  max-width: 70%;
+  max-width: 55%;
 }
 
 .frameBanner .frameFooter {
   position: absolute;
-  left: 5%;
-  right: 5%;
-  bottom: 6%;
+  top: calc(6 * var(--cqmin));
+  right: calc(5 * var(--cqmin));
   margin-top: 0;
 }
 
