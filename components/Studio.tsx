@@ -646,7 +646,7 @@ export default function Studio() {
             title="Image prompt mode"
             onClick={() => setImgMode((v) => !v)}
           >
-            🖼
+            <ImageIcon />
           </button>
           <button
             type="button"
@@ -803,6 +803,14 @@ function DocsFrame({
         </div>
       </div>
     </div>
+  );
+}
+
+function ImageIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 -960 960 960" fill="currentColor">
+      <path d="M480-80 397-263 214-180l83-183-183-83 183-83-83-183 183 83 83-183 83 183 183-83-83 183 183 83-183 83 83 183-183-83-83 183Z" />
+    </svg>
   );
 }
 
