@@ -389,16 +389,32 @@
   justify-content: center;
 }
 
-.frame {
+/* Reserves the on-screen (scaled-down) footprint of the canvas so the
+   stage centers/sizes correctly, while .frame itself stays laid out at
+   its true, untransformed export size — see the useEffect in Studio.tsx. */
+.frameScaleWrap {
+  flex: 0 0 auto;
   position: relative;
+}
+
+.frame {
+  /* Absolutely positioned within .frameScaleWrap so its true (untransformed)
+     layout size never expands the wrapper — only the scaled-down visual
+     footprint set on the wrapper does. */
+  position: absolute;
+  top: 0;
+  left: 0;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
   overflow: hidden;
   border-radius: 2px;
   border: 3px solid #0a0a0b;
-  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  padding: 7%;
+  /* calc(cqmin) instead of a percentage — Safari resolves percentage
+     padding on a flex item against a different base than Chrome/Firefox
+     (a long-standing flexbug), which made this pad tighter there and
+     starved the content area enough to clip text. */
+  padding: calc(7 * var(--cqmin));
   transition: width var(--dur-base) var(--ease-out), height var(--dur-base) var(--ease-out);
 }
 
@@ -439,7 +455,7 @@
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 6% 5%;
+  padding: calc(6 * var(--cqmin)) calc(5 * var(--cqmin));
 }
 
 .frameBanner .logoImg {

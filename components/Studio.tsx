@@ -13,13 +13,19 @@ type Theme = "white" | "dark" | "orange";
 type Layout = "statement" | "keystats" | "benefits" | "cardgrid" | "textimage";
 type EditorFormat = "square" | "landscape" | "wide" | "story" | "banner" | "docs";
 
-const EDITOR_FORMATS: { id: EditorFormat; name: string; ratio: string; aspect: number }[] = [
-  { id: "square", name: "Square", ratio: "1:1", aspect: 1 / 1 },
-  { id: "landscape", name: "Landscape", ratio: "1.91:1", aspect: 1.91 / 1 },
-  { id: "wide", name: "Wide", ratio: "16:9", aspect: 16 / 9 },
-  { id: "story", name: "Story", ratio: "9:16", aspect: 9 / 16 },
-  { id: "banner", name: "Banner", ratio: "4:1", aspect: 4 / 1 },
-  { id: "docs", name: "Docs", ratio: "A4", aspect: 1 / 1.414 },
+// True export pixel dimensions (matching the real ad specs in the brand's
+// Figma file), not anything derived from the viewport. The canvas always
+// lays out at these exact sizes — see the scale-wrapper in the editor
+// step — so text wrapping and spacing never change with window size or
+// browser (that inconsistency was the root cause of a layout bug where
+// the same design looked fine in one browser and broken in another).
+const EDITOR_FORMATS: { id: EditorFormat; name: string; ratio: string; aspect: number; width: number }[] = [
+  { id: "square", name: "Square", ratio: "1:1", aspect: 1 / 1, width: 1080 },
+  { id: "landscape", name: "Landscape", ratio: "1.91:1", aspect: 1.91 / 1, width: 1080 },
+  { id: "wide", name: "Wide", ratio: "16:9", aspect: 16 / 9, width: 1920 },
+  { id: "story", name: "Story", ratio: "9:16", aspect: 9 / 16, width: 1080 },
+  { id: "banner", name: "Banner", ratio: "4:1", aspect: 4 / 1, width: 1600 },
+  { id: "docs", name: "Docs", ratio: "A4", aspect: 1 / 1.414, width: 1240 },
 ];
 
 const LAYOUTS: { id: Layout; name: string; icon: string }[] = [
@@ -131,7 +137,8 @@ export default function Studio() {
   const [toast, setToast] = useState<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const [frameSize, setFrameSize] = useState({ width: 480, height: 480 });
+  const [scale, setScale] = useState(1);
+  const [docsWidth, setDocsWidth] = useState(480);
   const [contentTheme, toggleContentTheme] = useContentTheme();
   const isLight = contentTheme === "world";
 
@@ -142,43 +149,52 @@ export default function Studio() {
     [design]
   );
 
-  // Fit the canvas into a comfortable, consistent-footprint box (like a real
-  // design tool's canvas, not something that balloons to fill the screen),
-  // shrinking further only if the stage itself is smaller than that box.
-  // Text inside uses cqmin (the frame's smaller dimension), so a thin Banner
-  // or narrow Story gets proportionally smaller type instead of overflowing.
+  // The canvas always lays out at its true export pixel size (formatMeta.width
+  // x width/aspect) — never something derived from the viewport — so text
+  // wrapping and spacing are identical everywhere the app runs. Only the
+  // *display* is shrunk to fit the stage, via a CSS transform: scale on a
+  // wrapper around the untransformed frame, so what gets exported (frameRef)
+  // and what gets measured for --cqmin is always the real size.
+  const frameSize = useMemo(() => {
+    const width = formatMeta.width;
+    return { width, height: Math.round(width / formatMeta.aspect) };
+  }, [formatMeta]);
+
   useEffect(() => {
     const stage = stageRef.current;
-    if (!stage || step !== "editor") return;
+    if (!stage || step !== "editor" || formatMeta.id === "docs") return;
 
     const STAGE_PADDING = 32;
-    const BOX = 560;
 
     function fit() {
-      if (formatMeta.id === "docs") {
-        // A document scrolls at a comfortable reading width rather than
-        // being squeezed into a square-ish box — height is natural/auto.
-        const width = Math.min(480, Math.max(120, stage!.clientWidth - STAGE_PADDING));
-        setFrameSize({ width: Math.round(width), height: 0 });
-        return;
-      }
-      const availW = Math.min(BOX, Math.max(120, stage!.clientWidth - STAGE_PADDING));
-      const availH = Math.min(BOX, Math.max(120, stage!.clientHeight - STAGE_PADDING));
-      const ratio = formatMeta.aspect;
-      let width = Math.min(availW, availH * ratio);
-      let height = width / ratio;
-      if (height > availH) {
-        height = availH;
-        width = height * ratio;
-      }
-      setFrameSize({ width: Math.round(width), height: Math.round(height) });
+      const availW = Math.max(80, stage!.clientWidth - STAGE_PADDING);
+      const availH = Math.max(80, stage!.clientHeight - STAGE_PADDING);
+      setScale(Math.min(1, availW / frameSize.width, availH / frameSize.height));
     }
 
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(stage);
     return () => ro.disconnect();
-  }, [step, formatMeta.aspect]);
+  }, [step, formatMeta.id, frameSize.width, frameSize.height]);
+
+  // Docs reads as a scrollable document at a comfortable reading width
+  // rather than a fixed-aspect canvas, so it keeps its own responsive width.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || step !== "editor" || formatMeta.id !== "docs") return;
+
+    const STAGE_PADDING = 32;
+
+    function fit() {
+      setDocsWidth(Math.round(Math.min(480, Math.max(120, stage!.clientWidth - STAGE_PADDING))));
+    }
+
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(stage);
+    return () => ro.disconnect();
+  }, [step, formatMeta.id]);
 
   function startFromBrief(text: string, _visual: string, format: FormatId) {
     setBrief(text);
@@ -241,15 +257,23 @@ export default function Studio() {
   }
 
   async function exportPng() {
-    if (!frameRef.current) return;
+    const el = frameRef.current;
+    if (!el) return;
+    // The canvas is shown scaled down to fit the stage (see the
+    // frameScaleWrap above) — reset that for the capture so the export is
+    // always the full, true design size, then restore it.
+    const prevTransform = el.style.transform;
+    el.style.transform = "none";
     try {
-      const dataUrl = await toPng(frameRef.current, { pixelRatio: 2 });
+      const dataUrl = await toPng(el, { pixelRatio: 2 });
       const a = document.createElement("a");
       a.href = dataUrl;
       a.download = "brand-os-design.png";
       a.click();
     } catch {
       showToast("Export failed — try again.");
+    } finally {
+      el.style.transform = prevTransform;
     }
   }
 
@@ -389,8 +413,12 @@ export default function Studio() {
 
         <div className={`${styles.stage} ${design.format === "docs" ? styles.stageDoc : ""}`} ref={stageRef}>
           {design.format === "docs" ? (
-            <DocsFrame frameRef={frameRef} design={design} width={frameSize.width} commit={commit} />
+            <DocsFrame frameRef={frameRef} design={design} width={docsWidth} commit={commit} />
           ) : (
+            <div
+              className={styles.frameScaleWrap}
+              style={{ width: frameSize.width * scale, height: frameSize.height * scale }}
+            >
             <div
               ref={frameRef}
               className={`${styles.frame} ${
@@ -400,6 +428,8 @@ export default function Studio() {
                 {
                   width: frameSize.width,
                   height: frameSize.height,
+                  transform: `scale(${scale})`,
+                  transformOrigin: "top left",
                   "--cqmin": `${Math.min(frameSize.width, frameSize.height) / 100}px`,
                 } as React.CSSProperties
               }
@@ -477,6 +507,7 @@ export default function Studio() {
                   {design.cta}
                 </span>
               </div>
+            </div>
             </div>
           )}
         </div>
