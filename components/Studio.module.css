@@ -629,6 +629,8 @@
   color: #0a0a0b;
 }
 .sendBtn:hover { background: var(--accent-hover); color: #0a0a0b; }
+.sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.sendBtn:disabled:hover { background: var(--accent); }
 
 .composerHint {
   width: 100%;

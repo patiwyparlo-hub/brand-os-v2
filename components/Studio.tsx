@@ -128,11 +128,18 @@ const DIRECTIONS: { id: string; name: string; desc: string; theme: Theme; layout
 export default function Studio() {
   const [step, setStep] = useState<Step>("brief");
   const [brief, setBrief] = useState("");
-  const [history, setHistory] = useState<DesignState[]>([]);
-  const [histIndex, setHistIndex] = useState(0);
+  // history + index live in one state object, updated atomically, so
+  // multiple commit() calls in the same event handler (e.g. an AI edit
+  // that changes both theme and layout) can't read a stale index — that
+  // was a real bug: two commits in one tick could advance histIndex past
+  // the end of history, crashing on design=history[histIndex]=undefined.
+  const [historyState, setHistoryState] = useState<{ list: DesignState[]; index: number }>({ list: [], index: 0 });
+  const history = historyState.list;
+  const histIndex = historyState.index;
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [imgMode, setImgMode] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -214,8 +221,7 @@ export default function Studio() {
     const mapped: EditorFormat = format === "document" ? "docs" : format;
     const dir = DIRECTIONS[0];
     const base = { ...defaultDesign(mapped, text), theme: dir.theme, layout: dir.layout };
-    setHistory([base]);
-    setHistIndex(0);
+    setHistoryState({ list: [base], index: 0 });
 
     // Ask Claude to invent on-brand headline copy for the brief instead of
     // just echoing it back verbatim. Falls back to the literal-brief
@@ -229,7 +235,7 @@ export default function Studio() {
       });
       const data = await res.json();
       if (res.ok) {
-        setHistory([{ ...base, titleInk: data.titleInk, titleAccent: data.titleAccent, sub: data.sub }]);
+        setHistoryState({ list: [{ ...base, titleInk: data.titleInk, titleAccent: data.titleAccent, sub: data.sub }], index: 0 });
       } else {
         showToast(data.error ?? "Couldn't generate copy — using your brief as the headline instead.");
       }
@@ -242,29 +248,27 @@ export default function Studio() {
 
   function skipToEditor(format: FormatId) {
     const mapped: EditorFormat = format === "document" ? "docs" : format;
-    setHistory([defaultDesign(mapped, "")]);
-    setHistIndex(0);
+    setHistoryState({ list: [defaultDesign(mapped, "")], index: 0 });
     setStep("editor");
   }
 
   function commit(patch: Partial<DesignState>) {
-    setHistory((h) => {
-      const next = { ...h[histIndex], ...patch };
-      const truncated = h.slice(0, histIndex + 1);
-      return [...truncated, next];
+    setHistoryState((s) => {
+      const truncated = s.list.slice(0, s.index + 1);
+      const next = { ...truncated[s.index], ...patch };
+      const list = [...truncated, next];
+      return { list, index: list.length - 1 };
     });
-    setHistIndex((i) => i + 1);
   }
 
   function undo() {
-    setHistIndex((i) => Math.max(0, i - 1));
+    setHistoryState((s) => ({ ...s, index: Math.max(0, s.index - 1) }));
   }
   function redo() {
-    setHistIndex((i) => Math.min(history.length - 1, i + 1));
+    setHistoryState((s) => ({ ...s, index: Math.min(s.list.length - 1, s.index + 1) }));
   }
   function resetDesign() {
-    setHistory((h) => [h[0]]);
-    setHistIndex(0);
+    setHistoryState((s) => ({ list: [s.list[0]], index: 0 }));
   }
 
   function showToast(text: string) {
@@ -272,22 +276,51 @@ export default function Studio() {
     window.setTimeout(() => setToast(null), 2600);
   }
 
-  function sendMessage() {
-    const text = message.trim().toLowerCase();
-    if (!text || !design) return;
+  // Keyword-only fallback for when the assistant isn't configured or the
+  // request fails — keeps the composer at least somewhat useful offline.
+  function applyKeywordEdit(text: string): boolean {
+    const lower = text.toLowerCase();
     let handled = false;
-    if (/dark/.test(text)) { commit({ theme: "dark" }); handled = true; }
-    else if (/orange/.test(text)) { commit({ theme: "orange" }); handled = true; }
-    else if (/white|light/.test(text)) { commit({ theme: "white" }); handled = true; }
-    if (/stat/.test(text)) { commit({ layout: "keystats" }); handled = true; }
-    else if (/benefit/.test(text)) { commit({ layout: "benefits" }); handled = true; }
-    else if (/grid|card/.test(text)) { commit({ layout: "cardgrid" }); handled = true; }
-    else if (/image|photo/.test(text)) { commit({ layout: "textimage" }); handled = true; }
-    else if (/statement|headline/.test(text)) { commit({ layout: "statement" }); handled = true; }
+    if (/dark/.test(lower)) { commit({ theme: "dark" }); handled = true; }
+    else if (/orange/.test(lower)) { commit({ theme: "orange" }); handled = true; }
+    else if (/white|light/.test(lower)) { commit({ theme: "white" }); handled = true; }
+    if (/stat/.test(lower)) { commit({ layout: "keystats" }); handled = true; }
+    else if (/benefit/.test(lower)) { commit({ layout: "benefits" }); handled = true; }
+    else if (/grid|card/.test(lower)) { commit({ layout: "cardgrid" }); handled = true; }
+    else if (/image|photo/.test(lower)) { commit({ layout: "textimage" }); handled = true; }
+    else if (/statement|headline/.test(lower)) { commit({ layout: "statement" }); handled = true; }
+    return handled;
+  }
 
+  async function sendMessage() {
+    const text = message.trim();
+    if (!text || !design) return;
     setMessage("");
-    if (handled) showToast("Applied — this preview edits via keywords, live AI isn't connected yet.");
-    else showToast("AI editing isn't connected in this preview. Try the panels, or say “dark”, “stats”, “benefits”, “grid”.");
+    setSendingMessage(true);
+
+    try {
+      const res = await fetch("/api/edit-design", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, design }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(applyKeywordEdit(text) ? "Applied via keywords — the assistant isn't configured." : data.error ?? "The assistant isn't configured.");
+        return;
+      }
+      if (data.patch) {
+        commit(data.patch as Partial<DesignState>);
+        showToast("Applied.");
+      } else {
+        showToast(data.reply || "Not sure what to change — try being more specific.");
+      }
+    } catch {
+      showToast(applyKeywordEdit(text) ? "Applied via keywords — couldn't reach the assistant." : "Couldn't reach the assistant.");
+    } finally {
+      setSendingMessage(false);
+    }
   }
 
   async function exportPng() {
@@ -595,8 +628,9 @@ export default function Studio() {
             ?
           </button>
           <textarea
-            placeholder="Ask for any change: copy, layout, theme, or an image"
+            placeholder={sendingMessage ? "Thinking…" : "Ask for any change: copy, layout, theme, or an image"}
             value={message}
+            disabled={sendingMessage}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -614,8 +648,14 @@ export default function Studio() {
           >
             🖼
           </button>
-          <button type="button" className={`${styles.composerBtn} ${styles.sendBtn}`} title="Send" onClick={sendMessage}>
-            ↑
+          <button
+            type="button"
+            className={`${styles.composerBtn} ${styles.sendBtn}`}
+            title="Send"
+            onClick={sendMessage}
+            disabled={sendingMessage || !message.trim()}
+          >
+            {sendingMessage ? "…" : "↑"}
           </button>
         </div>
         <div className={styles.composerHint}>One change at a time gets the sharpest results.</div>
