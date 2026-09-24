@@ -57,6 +57,7 @@ type DesignState = {
   benefits: string[];
   cards: { v: string; l: string }[];
   body: string;
+  imageUrl: string;
   // Docs-only fields
   about: string;
   statsHeading: string;
@@ -98,6 +99,7 @@ function defaultDesign(format: EditorFormat, brief: string): DesignState {
       { v: "10x", l: "Return on investment" },
     ],
     body: "Use this space to describe your product, service or story. Click to edit this text, or ask for a rewrite in plain language.",
+    imageUrl: "",
     about:
       "Introduce your company or product here. Explain what you do and who you serve in a few clear sentences. Click any text to edit it, or ask for a rewrite.",
     statsHeading: "Success by the Numbers",
@@ -501,11 +503,22 @@ export default function Studio() {
                 } as React.CSSProperties
               }
             >
+              {design.layout === "textimage" && (
+                <div
+                  className={styles.frameImageLayer}
+                  style={design.imageUrl ? { backgroundImage: `url(${design.imageUrl})` } : undefined}
+                />
+              )}
+
               <img className={styles.logoImg} src={LOGO_BY_THEME[design.theme]} alt="Strategy" />
 
               <div
                 className={`${styles.frameMain} ${
-                  design.format !== "square" && design.format !== "story" ? styles.frameMainNarrow : ""
+                  design.layout === "textimage"
+                    ? styles.frameMainImageNarrow
+                    : design.format !== "square" && design.format !== "story"
+                    ? styles.frameMainNarrow
+                    : ""
                 } ${design.format === "story" ? styles.frameMainCentered : ""}`}
               >
                 <div className={styles.frameTitle}>
@@ -572,7 +585,14 @@ export default function Studio() {
                 )}
 
                 {design.layout === "textimage" && (
-                  <div className={styles.bodyText}>{design.body}</div>
+                  <div
+                    className={styles.frameSub}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => commit({ sub: e.currentTarget.textContent || "" })}
+                  >
+                    {design.sub}
+                  </div>
                 )}
               </div>
               <div className={styles.frameFooter}>

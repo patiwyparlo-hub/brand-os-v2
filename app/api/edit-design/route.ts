@@ -23,7 +23,7 @@ const TOOL: Anthropic.Tool = {
       titleAccent: { type: "string", description: "Bold accent line of the headline (brand accent color)." },
       sub: {
         type: "array",
-        description: "Supporting copy for the 'statement' layout — exactly three short lines.",
+        description: "Supporting copy for the 'statement' and 'textimage' layouts — exactly three short lines.",
         items: { type: "string" },
         minItems: 3,
         maxItems: 3,
@@ -54,7 +54,6 @@ const TOOL: Anthropic.Tool = {
           additionalProperties: false,
         },
       },
-      body: { type: "string", description: "For the 'textimage' layout: the body paragraph." },
     },
     additionalProperties: false,
   },

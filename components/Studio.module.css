@@ -423,7 +423,7 @@
 .frameThemeOrange { background: linear-gradient(#fa660f 0%, #fa660f 56%, #ffffff 100%); border-color: #000; }
 
 .frameInk { color: #0a0a0b; outline: none; }
-.frameThemeDark .frameInk, .frameThemeDark .frameSub, .frameThemeDark .statLabel, .frameThemeDark .benefitText, .frameThemeDark .bodyText {
+.frameThemeDark .frameInk, .frameThemeDark .frameSub, .frameThemeDark .statLabel, .frameThemeDark .benefitText {
   color: #ffffff;
 }
 
@@ -455,6 +455,24 @@
 .frameMainCentered {
   justify-content: center;
   margin-top: 0;
+}
+
+/* Text + image: text column stays narrow and clear of the photo, which
+   sits full-bleed behind everything and fades into the theme's own
+   background toward the left via a mask (not a separate overlay div,
+   so it always matches frameThemeWhite/Dark/Orange's background exactly). */
+.frameMainImageNarrow {
+  max-width: 45%;
+}
+
+.frameImageLayer {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 35%, black 65%, black 100%);
+  mask-image: linear-gradient(to right, transparent 0%, transparent 35%, black 65%, black 100%);
 }
 
 /* Banner (ultra-wide): logo top-left with the copy stacked directly
@@ -528,13 +546,6 @@
 .frameThemeOrange .gridCardValue { color: #0a0a0b; }
 .gridCardLabel { font-weight: 500; font-size: calc(1.9 * var(--cqmin)); color: #0a0a0b; }
 .frameThemeDark .gridCardLabel { color: #fff; }
-
-.bodyText {
-  font-weight: 500;
-  line-height: 1.45;
-  font-size: calc(2.9 * var(--cqmin));
-  color: #0a0a0b;
-}
 
 .frameFooter {
   display: flex;
