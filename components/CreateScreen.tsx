@@ -101,9 +101,6 @@ export default function CreateScreen({
             onChange={(e) => setBrief(e.target.value)}
             rows={1}
           />
-          <button type="button" className={styles.iconBtn} title="Sharpen your brief with AI" aria-label="Sharpen your brief with AI">
-            <SparkleIcon />
-          </button>
           </div>
         </div>
 
@@ -167,14 +164,6 @@ function PaperclipIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21.44 11.05l-9.19 9.19a5.5 5.5 0 01-7.78-7.78l9.19-9.19a3.5 3.5 0 014.95 4.95l-9.2 9.19a1.5 1.5 0 01-2.12-2.12l8.49-8.48" />
-    </svg>
-  );
-}
-
-function SparkleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2l1.6 5.6L19 9l-5.4 1.4L12 16l-1.6-5.6L5 9l5.4-1.4L12 2z" />
     </svg>
   );
 }
