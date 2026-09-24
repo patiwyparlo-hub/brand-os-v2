@@ -17,6 +17,7 @@
   --glass-bg-hover: rgba(255, 255, 255, 0.065);
   --glass-pane: rgba(13, 13, 18, 0.52);
   --glass-pane-heavy: rgba(12, 12, 17, 0.68);
+  --confirm-pane: rgba(22, 22, 26, 0.94);
   --glass-line: rgba(255, 255, 255, 0.08);
   --glass-line-faint: rgba(255, 255, 255, 0.05);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -56,6 +57,7 @@
   --glass-bg-hover: rgba(10, 10, 11, 0.06);
   --glass-pane: rgba(255, 255, 255, 0.75);
   --glass-pane-heavy: rgba(255, 255, 255, 0.9);
+  --confirm-pane: rgba(255, 255, 255, 0.97);
   --glass-line: rgba(10, 10, 11, 0.08);
   --glass-line-faint: rgba(10, 10, 11, 0.05);
 
@@ -359,6 +361,73 @@
 
 .sideMenuButton:disabled {
   opacity: 0.4;
+  cursor: default;
+}
+
+.chatHistoryChevron {
+  margin-left: auto;
+  color: var(--ink-tertiary);
+  display: flex;
+  align-items: center;
+}
+
+.chatHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chatHistoryEmpty {
+  font-size: 12px;
+  color: var(--ink-faint);
+  padding: 4px 2px;
+}
+
+.chatHistoryItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-line);
+  border-radius: 8px;
+  padding: 8px 8px 8px 12px;
+}
+
+.chatHistoryPrompt {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatHistoryRevert {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid var(--glass-line);
+  color: var(--ink-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+
+.chatHistoryRevert:hover:not(:disabled) {
+  border-color: var(--accent-edge);
+  color: var(--accent);
+  background: var(--glass-bg-hover);
+}
+
+.chatHistoryRevert:disabled {
+  opacity: 0.35;
   cursor: default;
 }
 
@@ -909,6 +978,82 @@
   font-weight: 600;
   font-size: 10.5px;
   outline: none;
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.confirmCard {
+  background: var(--confirm-pane);
+  backdrop-filter: var(--blur-pane);
+  -webkit-backdrop-filter: var(--blur-pane);
+  border: 1px solid var(--glass-line);
+  border-radius: 20px;
+  padding: 32px;
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+.confirmTitle {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.confirmText {
+  font-size: 14px;
+  color: var(--ink-secondary);
+  line-height: 1.65;
+  margin-bottom: 28px;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.confirmBtnCancel {
+  background: transparent;
+  border: 1px solid var(--glass-line);
+  color: var(--ink-secondary);
+  border-radius: 9px;
+  padding: 11px 20px;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+
+.confirmBtnCancel:hover {
+  border-color: var(--accent-edge);
+  color: var(--ink);
+}
+
+.confirmBtnDanger {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #0a0a0b;
+  border-radius: 9px;
+  padding: 11px 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.confirmBtnDanger:hover {
+  opacity: 0.88;
 }
 
 .toast {

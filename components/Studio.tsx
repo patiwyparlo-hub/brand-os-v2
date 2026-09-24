@@ -142,7 +142,11 @@ export default function Studio() {
   const [rightOpen, setRightOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [imgMode, setImgMode] = useState(false);
+  const [chatLog, setChatLog] = useState<{ text: string; historyIndex: number }[]>([]);
+  const [chatHistoryOpen, setChatHistoryOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<
+    { kind: "revert"; text: string; historyIndex: number } | { kind: "reset" } | null
+  >(null);
   const [toast, setToast] = useState<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -288,6 +292,9 @@ export default function Studio() {
   function resetDesign() {
     setHistoryState((s) => ({ list: [s.list[0]], index: 0 }));
   }
+  function revertTo(index: number) {
+    setHistoryState((s) => ({ ...s, index: Math.max(0, Math.min(index, s.list.length - 1)) }));
+  }
 
   function showToast(text: string) {
     setToast(text);
@@ -315,6 +322,11 @@ export default function Studio() {
     if (!text || !design) return;
     setMessage("");
     setSendingMessage(true);
+    // history.length right now is exactly the index commit() will land on if
+    // it fires (see commit()'s append-one-entry behavior) — capture it before
+    // any await so the chat-history entry always points at the right state.
+    const beforeLength = history.length;
+    const logPrompt = (historyIndex: number) => setChatLog((log) => [...log, { text, historyIndex }]);
 
     try {
       const res = await fetch("/api/edit-design", {
@@ -325,17 +337,23 @@ export default function Studio() {
       const data = await res.json();
 
       if (!res.ok) {
-        showToast(applyKeywordEdit(text) ? "Applied via keywords — the assistant isn't configured." : data.error ?? "The assistant isn't configured.");
+        const applied = applyKeywordEdit(text);
+        logPrompt(applied ? beforeLength : beforeLength - 1);
+        showToast(applied ? "Applied via keywords — the assistant isn't configured." : data.error ?? "The assistant isn't configured.");
         return;
       }
       if (data.patch) {
         commit(data.patch as Partial<DesignState>);
+        logPrompt(beforeLength);
         showToast(data.reply || "Applied.");
       } else {
+        logPrompt(beforeLength - 1);
         showToast(data.reply || "Not sure what to change — try being more specific.");
       }
     } catch {
-      showToast(applyKeywordEdit(text) ? "Applied via keywords — couldn't reach the assistant." : "Couldn't reach the assistant.");
+      const applied = applyKeywordEdit(text);
+      logPrompt(applied ? beforeLength : beforeLength - 1);
+      showToast(applied ? "Applied via keywords — couldn't reach the assistant." : "Couldn't reach the assistant.");
     } finally {
       setSendingMessage(false);
     }
@@ -628,18 +646,12 @@ export default function Studio() {
 
         <div className={`${styles.sideMenu} ${styles.right} ${rightOpen ? styles.open : ""}`}>
           <div className={styles.sideMenuHeader}>
-            <div className={styles.sideMenuTitle}>History &amp; State</div>
+            <div className={styles.sideMenuTitle}>History</div>
             <button type="button" className={styles.sideMenuClose} onClick={() => setRightOpen(false)}>
               ✕
             </button>
           </div>
           <div className={styles.sideMenuContent}>
-            <div>
-              <div className={styles.sectionLabel}>Save</div>
-              <button type="button" className={styles.sideMenuButton} onClick={() => showToast("Saved (preview only — not persisted).")}>
-                🔖 Save this design
-              </button>
-            </div>
             <div>
               <div className={styles.sectionLabel}>Actions</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -651,8 +663,47 @@ export default function Studio() {
                 </button>
               </div>
             </div>
-            <button type="button" className={styles.sideMenuButton} onClick={resetDesign}>
-              ⟲ Reset Design
+            <div>
+              <button
+                type="button"
+                className={styles.sideMenuButton}
+                onClick={() => setChatHistoryOpen((v) => !v)}
+              >
+                Chat history
+                <span className={styles.chatHistoryChevron}>{chatHistoryOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}</span>
+              </button>
+              {chatHistoryOpen && (
+                <div className={styles.chatHistoryList}>
+                  {chatLog.length === 0 ? (
+                    <div className={styles.chatHistoryEmpty}>No prompts yet.</div>
+                  ) : (
+                    [...chatLog].reverse().map((entry, i) => {
+                      const key = chatLog.length - 1 - i;
+                      return (
+                        <div className={styles.chatHistoryItem} key={key}>
+                          <span className={styles.chatHistoryPrompt} title={entry.text}>
+                            {entry.text}
+                          </span>
+                          <button
+                            type="button"
+                            className={styles.chatHistoryRevert}
+                            title="Revert to this point"
+                            disabled={histIndex === entry.historyIndex}
+                            onClick={() =>
+                              setConfirmAction({ kind: "revert", text: entry.text, historyIndex: entry.historyIndex })
+                            }
+                          >
+                            ↺
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+            <button type="button" className={styles.sideMenuButton} onClick={() => setConfirmAction({ kind: "reset" })}>
+              Reset Design
             </button>
           </div>
         </div>
@@ -678,14 +729,6 @@ export default function Studio() {
           />
           <button
             type="button"
-            className={`${styles.composerBtn} ${imgMode ? styles.on : ""}`}
-            title="Image prompt mode"
-            onClick={() => setImgMode((v) => !v)}
-          >
-            <ImageIcon />
-          </button>
-          <button
-            type="button"
             className={`${styles.composerBtn} ${styles.sendBtn}`}
             title="Send"
             onClick={sendMessage}
@@ -698,6 +741,44 @@ export default function Studio() {
       </div>
 
       {toast && <div className={styles.toast}>{toast}</div>}
+
+      {confirmAction && (
+        <div className={styles.confirmOverlay} onClick={() => setConfirmAction(null)}>
+          <div className={styles.confirmCard} onClick={(e) => e.stopPropagation()}>
+            {confirmAction.kind === "revert" ? (
+              <>
+                <div className={styles.confirmTitle}>Revert to this prompt?</div>
+                <div className={styles.confirmText}>
+                  Are you sure you want to revert to this prompt: “{confirmAction.text}”? Changes made after it will be lost unless you redo.
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.confirmTitle}>Reset design?</div>
+                <div className={styles.confirmText}>
+                  Are you sure you want to reset the design? This clears your whole edit history back to the starting point and can't be redone.
+                </div>
+              </>
+            )}
+            <div className={styles.confirmActions}>
+              <button type="button" className={styles.confirmBtnCancel} onClick={() => setConfirmAction(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.confirmBtnDanger}
+                onClick={() => {
+                  if (confirmAction.kind === "revert") revertTo(confirmAction.historyIndex);
+                  else resetDesign();
+                  setConfirmAction(null);
+                }}
+              >
+                {confirmAction.kind === "revert" ? "Revert" : "Reset"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -842,18 +923,26 @@ function DocsFrame({
   );
 }
 
-function ImageIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 -960 960 960" fill="currentColor">
-      <path d="M480-80 397-263 214-180l83-183-183-83 183-83-83-183 183 83 83-183 83 183 183-83-83 183 183 83-183 83 83 183-183-83-83 183Z" />
-    </svg>
-  );
-}
-
 function AttachIcon() {
   return (
     <svg width="17" height="17" viewBox="0 -960 960 960" fill="currentColor">
       <path d="M720-330q0 104-73 177T470-80q-104 0-177-73t-73-177v-370q0-75 52.5-127.5T400-880q75 0 127.5 52.5T580-700v350q0 46-32 78t-78 32q-46 0-78-32t-32-78v-370h80v370q0 13 8.5 21.5T470-320q13 0 21.5-8.5T500-350v-350q-1-42-29.5-71T400-800q-42 0-71 29t-29 71v370q-1 71 49 120.5T470-160q70 0 119-49.5T640-330v-390h80v390Z" />
+    </svg>
+  );
+}
+
+function ChevronUpIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 -960 960 960" fill="currentColor">
+      <path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 -960 960 960" fill="currentColor">
+      <path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z" />
     </svg>
   );
 }
