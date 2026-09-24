@@ -460,7 +460,7 @@ export default function Studio() {
                   </div>
                 </div>
 
-                {design.layout === "statement" && design.format !== "landscape" && design.format !== "banner" && (
+                {design.layout === "statement" && (
                   <div
                     className={styles.frameSub}
                     contentEditable
