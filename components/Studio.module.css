@@ -474,7 +474,7 @@
 }
 
 .frameTitle .accent { color: var(--accent); }
-.frameThemeOrange .frameTitle .accent { color: #0a0a0b; }
+.frameThemeOrange .frameTitle .accent { color: #ffffff; }
 
 .frameSub {
   font-weight: 500;
@@ -526,7 +526,7 @@
 .frameFooter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin-top: calc(3.5 * var(--cqmin));
   flex: 0 0 auto;
 }
@@ -545,22 +545,6 @@
   border: none;
   cursor: text;
 }
-
-/* On an orange canvas an orange button disappears into the background —
-   the reference designs swap it for black with white text instead. */
-.frameThemeOrange .ctaBtn {
-  background: #0a0a0b;
-  color: #ffffff;
-}
-
-.urlText {
-  color: var(--accent);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  font-size: calc(2.4 * var(--cqmin));
-  outline: none;
-}
-.frameThemeOrange .urlText { color: #0a0a0b; }
 
 /* ---------- composer ---------- */
 

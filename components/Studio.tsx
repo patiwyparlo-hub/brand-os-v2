@@ -74,7 +74,7 @@ function defaultDesign(format: EditorFormat, brief: string): DesignState {
     layout: "statement",
     titleInk: hasBrief ? "" : "Make something ",
     titleAccent: hasBrief ? brief.trim() : "on brand",
-    sub: "Click any element to edit it. Or describe what you want below. Everything stays on brand.",
+    sub: "Click any element to edit it.\nOr describe what you want below.\nEverything stays on brand.",
     cta: "Learn More",
     url: "software.strategy.com",
     stats: [
@@ -475,14 +475,6 @@ export default function Studio() {
                   onBlur={(e) => commit({ cta: e.currentTarget.textContent || "" })}
                 >
                   {design.cta}
-                </span>
-                <span
-                  className={styles.urlText}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => commit({ url: e.currentTarget.textContent || "" })}
-                >
-                  {design.url}
                 </span>
               </div>
             </div>
