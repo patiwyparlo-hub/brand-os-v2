@@ -3,8 +3,10 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { anthropic, anthropicReady } from "@/lib/anthropic";
 import { currentUser } from "@/lib/session";
 import { guidelinesContext } from "@/data/guidelines";
+import { generateImage, higgsfieldReady } from "@/lib/higgsfield";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const TOOL: Anthropic.Tool = {
   name: "edit_design",
@@ -54,6 +56,11 @@ const TOOL: Anthropic.Tool = {
           additionalProperties: false,
         },
       },
+      imagePrompt: {
+        type: "string",
+        description:
+          "Only set this when the user asks to add, change, or replace the photo (e.g. 'add a photo of...', 'dodaj zdjęcie...'): a vivid, concrete image-generation prompt (in English, photographic style) describing exactly what they asked for. When you set this, also set layout to 'textimage' unless it already is. Omit entirely otherwise.",
+      },
     },
     additionalProperties: false,
   },
@@ -88,7 +95,7 @@ ${guidelinesContext(role)}
 Current design state (JSON):
 ${JSON.stringify(design, null, 2)}
 
-Call edit_design with only the fields that should change based on the user's latest message. If they ask for new/rewritten copy, write real finished copy yourself — never leave a field as a placeholder or description of what it should say. If their request doesn't map to anything editable, don't call the tool.`;
+Call edit_design with only the fields that should change based on the user's latest message. If they ask for new/rewritten copy, write real finished copy yourself — never leave a field as a placeholder or description of what it should say. If they ask to add, change, or replace a photo, set imagePrompt (and layout: "textimage" if it isn't already). If their request doesn't map to anything editable, don't call the tool.`;
 
   const priorTurns: Anthropic.MessageParam[] = Array.isArray(history)
     ? history.map((m: { role: "user" | "assistant"; content: string }) => ({ role: m.role, content: m.content }))
@@ -119,6 +126,20 @@ Call edit_design with only the fields that should change based on the user's lat
 
     const patch = block.input as Record<string, unknown>;
     if (Array.isArray(patch.sub)) patch.sub = (patch.sub as string[]).join("\n");
+
+    const imagePrompt = typeof patch.imagePrompt === "string" ? patch.imagePrompt : null;
+    delete patch.imagePrompt;
+    if (imagePrompt && higgsfieldReady()) {
+      try {
+        patch.imageUrl = await generateImage(imagePrompt);
+      } catch (err) {
+        console.error("Higgsfield image generation failed:", err);
+        return NextResponse.json({ patch, reply: "Couldn't generate that photo right now — applied everything else." });
+      }
+    } else if (imagePrompt) {
+      return NextResponse.json({ patch, reply: "Image generation isn't configured — applied everything else." });
+    }
+
     return NextResponse.json({ patch, reply: null });
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Edit request failed." }, { status: 502 });

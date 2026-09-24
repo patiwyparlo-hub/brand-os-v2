@@ -423,7 +423,7 @@
 .frameThemeOrange { background: linear-gradient(#fa660f 0%, #fa660f 56%, #ffffff 100%); border-color: #000; }
 
 .frameInk { color: #0a0a0b; outline: none; }
-.frameThemeDark .frameInk, .frameThemeDark .frameSub, .frameThemeDark .statLabel, .frameThemeDark .benefitText {
+.frameThemeDark .frameInk, .frameThemeDark .frameSub, .frameThemeDark .statLabel, .frameThemeDark .benefit {
   color: #ffffff;
 }
 
@@ -527,7 +527,7 @@
 .statLabel { font-weight: 500; line-height: 1.25; font-size: calc(2.4 * var(--cqmin)); color: #0a0a0b; }
 
 .benefits { display: flex; flex-direction: column; gap: 10px; }
-.benefit { display: flex; align-items: baseline; gap: 8px; font-weight: 500; font-size: calc(3 * var(--cqmin)); }
+.benefit { display: flex; align-items: baseline; gap: 8px; font-weight: 500; font-size: calc(3 * var(--cqmin)); color: #0a0a0b; }
 .benefitDot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; align-self: center; }
 .frameThemeOrange .benefitDot { background: #0a0a0b; }
 

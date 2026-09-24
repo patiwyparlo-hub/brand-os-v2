@@ -226,9 +226,11 @@ export default function Studio() {
     setHistoryState({ list: [base], index: 0 });
 
     // Ask Claude to invent on-brand headline copy for the brief instead of
-    // just echoing it back verbatim. Falls back to the literal-brief
-    // version already set above if the assistant isn't configured or the
-    // request fails.
+    // just echoing it back verbatim, and to pick the format/layout itself
+    // (e.g. a LinkedIn brief asking for a photo -> landscape + text+image)
+    // rather than always using the manually-selected format and a fixed
+    // direction. Falls back to the literal-brief version already set above
+    // if the assistant isn't configured or the request fails.
     try {
       const res = await fetch("/api/generate-design", {
         method: "POST",
@@ -237,7 +239,21 @@ export default function Studio() {
       });
       const data = await res.json();
       if (res.ok) {
-        setHistoryState({ list: [{ ...base, titleInk: data.titleInk, titleAccent: data.titleAccent, sub: data.sub }], index: 0 });
+        const aiMapped: EditorFormat = data.format === "document" ? "docs" : data.format ?? mapped;
+        setHistoryState({
+          list: [
+            {
+              ...defaultDesign(aiMapped, text),
+              theme: dir.theme,
+              layout: data.layout ?? dir.layout,
+              titleInk: data.titleInk,
+              titleAccent: data.titleAccent,
+              sub: data.sub,
+              imageUrl: data.imageUrl ?? "",
+            },
+          ],
+          index: 0,
+        });
       } else {
         showToast(data.error ?? "Couldn't generate copy — using your brief as the headline instead.");
       }
@@ -314,7 +330,7 @@ export default function Studio() {
       }
       if (data.patch) {
         commit(data.patch as Partial<DesignState>);
-        showToast("Applied.");
+        showToast(data.reply || "Applied.");
       } else {
         showToast(data.reply || "Not sure what to change — try being more specific.");
       }
