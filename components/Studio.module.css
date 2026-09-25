@@ -73,15 +73,21 @@
 .topbar {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px 24px;
+  flex-direction: column;
+  gap: 12px;
   padding: 14px 28px;
   border-bottom: 1px solid var(--glass-line-faint);
   background: rgba(11, 11, 14, 0.42);
   backdrop-filter: var(--blur-soft);
   position: relative;
   z-index: 20;
+}
+
+.topbarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
   flex-wrap: wrap;
 }
 

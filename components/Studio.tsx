@@ -414,11 +414,13 @@ export default function Studio() {
       <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
         <HeroBackground isLight={isLight} />
         <div className={styles.topbar}>
-          <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
-            <img src="/brand/strategy-wordmark.svg" alt="Strategy Brand OS" height={27} style={{ height: 27, width: "auto" }} />
-          </div>
-          <div className={styles.headerRight}>
-            <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
+          <div className={styles.topbarRow}>
+            <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
+              <img src="/brand/strategy-wordmark.svg" alt="Strategy Brand OS" height={27} style={{ height: 27, width: "auto" }} />
+            </div>
+            <div className={styles.headerRight}>
+              <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
+            </div>
           </div>
         </div>
         <div className={styles.loadingWrap}>
@@ -438,25 +440,29 @@ export default function Studio() {
     <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
       <HeroBackground isLight={isLight} />
       <div className={styles.topbar}>
-        <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
-          <img src="/brand/strategy-wordmark.svg" alt="Strategy Brand OS" height={27} style={{ height: 27, width: "auto" }} />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button type="button" className={styles.btnGhostSm} onClick={() => setLeftOpen((v) => !v)}>
-            <EditIcon /> Design
-          </button>
-          <span style={{ fontSize: 12.5, color: "var(--ink-faint)" }}>
-            {formatMeta.name} · {formatMeta.ratio}
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className={styles.topbarRow}>
+          <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
+            <img src="/brand/strategy-wordmark.svg" alt="Strategy Brand OS" height={27} style={{ height: 27, width: "auto" }} />
+          </div>
           <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
-          <button type="button" className={styles.btnGhostSm} onClick={() => setRightOpen((v) => !v)}>
-            ⋮
-          </button>
-          <button type="button" className={styles.btnSecondary} onClick={exportPng}>
-            <DownloadIcon /> Export
-          </button>
+        </div>
+        <div className={styles.topbarRow}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button type="button" className={styles.btnGhostSm} onClick={() => setLeftOpen((v) => !v)}>
+              <EditIcon /> Design
+            </button>
+            <span style={{ fontSize: 12.5, color: "var(--ink-faint)" }}>
+              {formatMeta.name} · {formatMeta.ratio}
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button type="button" className={styles.btnGhostSm} onClick={() => setRightOpen((v) => !v)}>
+              ⋮
+            </button>
+            <button type="button" className={styles.btnSecondary} onClick={exportPng}>
+              <DownloadIcon /> Export
+            </button>
+          </div>
         </div>
       </div>
 
