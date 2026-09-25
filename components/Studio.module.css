@@ -207,7 +207,7 @@
 .sideMenu {
   position: absolute;
   top: 0;
-  bottom: 0;
+  bottom: calc(-1 * var(--composer-h, 0px));
   left: 0;
   width: min(300px, 84vw);
   background: var(--glass-pane);
@@ -387,8 +387,9 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
+  width: 100%;
+  text-align: left;
   transition: all var(--dur-fast) var(--ease-out);
 }
 .resetBtn:hover { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.6); color: #f87171; }
@@ -712,7 +713,7 @@
   align-items: center;
   gap: 8px;
   position: relative;
-  z-index: 20;
+  z-index: 30;
 }
 
 .composer {

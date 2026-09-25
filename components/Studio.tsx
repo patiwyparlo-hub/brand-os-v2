@@ -156,6 +156,8 @@ export default function Studio() {
   const [toast, setToast] = useState<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
+  const [composerHeight, setComposerHeight] = useState(0);
   const [scale, setScale] = useState(1);
   const [docsWidth, setDocsWidth] = useState(480);
   const [contentTheme, toggleContentTheme] = useContentTheme();
@@ -239,6 +241,18 @@ export default function Studio() {
     }, 1700);
     return () => window.clearInterval(id);
   }, [sendingMessage]);
+
+  // Measures the composer's real rendered height so the side panels can
+  // extend their background past editorBody's own bottom edge (which stops
+  // above the composer) all the way to the true bottom of the page, without
+  // the composer's height ever being hardcoded or affecting canvas sizing.
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el || step !== "editor") return;
+    const ro = new ResizeObserver(([entry]) => setComposerHeight(entry.contentRect.height));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [step]);
 
   async function startFromBrief(text: string, _visual: string, format: FormatId) {
     setBrief(text);
@@ -446,7 +460,10 @@ export default function Studio() {
 
   // editor
   return (
-    <div className={`${styles.studio} ${isLight ? styles.light : ""}`}>
+    <div
+      className={`${styles.studio} ${isLight ? styles.light : ""}`}
+      style={{ "--composer-h": `${composerHeight}px` } as React.CSSProperties}
+    >
       <HeroBackground isLight={isLight} />
       <div className={styles.topbar}>
         <div className={styles.topbarRow}>
@@ -747,7 +764,7 @@ export default function Studio() {
         </div>
       </div>
 
-      <div className={styles.composerWrap}>
+      <div className={styles.composerWrap} ref={composerRef}>
         <div className={styles.composer}>
           <button type="button" className={styles.composerBtn} title="Attach a reference file">
             <AttachIcon />
