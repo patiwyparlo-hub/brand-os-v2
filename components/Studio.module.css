@@ -713,7 +713,7 @@
   align-items: center;
   gap: 8px;
   position: relative;
-  z-index: 30;
+  z-index: 20;
 }
 
 .composer {
