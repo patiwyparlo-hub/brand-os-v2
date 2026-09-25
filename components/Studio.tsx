@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import CreateScreen from "./CreateScreen";
 import HeroBackground from "./HeroBackground";
-import type { FormatId } from "./formats";
+import { FORMATS, type FormatId } from "./formats";
 import styles from "./Studio.module.css";
 import { useContentTheme } from "./useContentTheme";
+import { addRecent } from "@/lib/recents";
 
 type Step = "brief" | "loading" | "editor";
 type Theme = "white" | "dark" | "orange";
@@ -246,6 +247,7 @@ export default function Studio() {
     const dir = DIRECTIONS[0];
     const base = { ...defaultDesign(mapped, text), theme: dir.theme, layout: dir.layout };
     setHistoryState({ list: [base], index: 0 });
+    let finalFormat: FormatId = format;
 
     // Ask Claude to invent on-brand headline copy for the brief instead of
     // just echoing it back verbatim, and to pick the format/layout itself
@@ -261,6 +263,7 @@ export default function Studio() {
       });
       const data = await res.json();
       if (res.ok) {
+        if (data.format) finalFormat = data.format;
         const aiMapped: EditorFormat = data.format === "document" ? "docs" : data.format ?? mapped;
         setHistoryState({
           list: [
@@ -282,6 +285,12 @@ export default function Studio() {
     } catch {
       showToast("Couldn't reach the assistant — using your brief as the headline instead.");
     } finally {
+      if (text.trim()) {
+        addRecent({
+          title: text.trim().slice(0, 60),
+          format: FORMATS.find((f) => f.id === finalFormat)?.name ?? finalFormat,
+        });
+      }
       setStep("editor");
     }
   }

@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./CreateScreen.module.css";
 import { FORMATS, type FormatId } from "./formats";
 import { useContentTheme, type ContentTheme } from "./useContentTheme";
 import HeroBackground from "./HeroBackground";
+import { getRecents, timeAgo, type RecentEntry } from "@/lib/recents";
 
-const RECENT_EXAMPLES = [
-  { title: "Q4 product launch", format: "Landscape", time: "2 days ago" },
-  { title: "Weekly metrics report", format: "Document", time: "5 days ago" },
-  { title: "Bitcoin treasury update", format: "Square", time: "1 week ago" },
+const RECENT_EXAMPLES: RecentEntry[] = [
+  { title: "Q4 product launch", format: "Landscape", time: Date.now() - 2 * 86400000 },
+  { title: "Weekly metrics report", format: "Document", time: Date.now() - 5 * 86400000 },
+  { title: "Bitcoin treasury update", format: "Square", time: Date.now() - 7 * 86400000 },
 ];
 
 export default function CreateScreen({
@@ -31,6 +32,12 @@ export default function CreateScreen({
   const contentTheme = theme ?? ownTheme;
   const toggleContentTheme = onToggleTheme ?? toggleOwnTheme;
   const isLight = contentTheme === "world";
+  const [recents, setRecents] = useState<RecentEntry[]>(RECENT_EXAMPLES);
+
+  useEffect(() => {
+    const stored = getRecents();
+    if (stored.length) setRecents(stored);
+  }, []);
 
   return (
     <div className={`${styles.page} ${isLight ? styles.light : ""}`}>
@@ -108,7 +115,7 @@ export default function CreateScreen({
             onClick={() => onCreate?.(brief, "", format ?? "square")}
           >
             <SparklesIcon />
-            Generate directions
+            Generate
           </button>
           <button
             type="button"
@@ -125,11 +132,11 @@ export default function CreateScreen({
             Recent
           </div>
           <div className={styles.recentGrid}>
-            {RECENT_EXAMPLES.map((r) => (
-              <button type="button" key={r.title} className={styles.recentCard}>
+            {recents.map((r, i) => (
+              <button type="button" key={`${r.title}-${i}`} className={styles.recentCard}>
                 <span className={styles.recentCardTitle}>{r.title}</span>
                 <span className={styles.recentCardMeta}>
-                  {r.format} · {r.time}
+                  {r.format} · {timeAgo(r.time)}
                 </span>
               </button>
             ))}
