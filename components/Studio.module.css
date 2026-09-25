@@ -786,7 +786,7 @@
 .btnSecondary {
   background: transparent;
   color: var(--accent);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--accent-edge);
   font-weight: 600;
   font-size: 13px;
   padding: 9px 16px;
