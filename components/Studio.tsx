@@ -42,6 +42,10 @@ const LOGO_BY_THEME: Record<Theme, string> = {
   orange: "/brand/strategy-logo-black.png",
 };
 
+// Cycled in the composer placeholder while a chat edit is in flight, so the
+// wait reads as active progress rather than a single frozen "Thinking…".
+const THINKING_PHRASES = ["Thinking…", "Refining design…", "Adding an image…", "Almost there…"];
+
 type UseCase = { icon: string; title: string; desc: string };
 
 type DesignState = {
@@ -142,6 +146,7 @@ export default function Studio() {
   const [rightOpen, setRightOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [thinkingPhrase, setThinkingPhrase] = useState(THINKING_PHRASES[0]);
   const [chatLog, setChatLog] = useState<{ text: string; historyIndex: number }[]>([]);
   const [chatHistoryOpen, setChatHistoryOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<
@@ -220,6 +225,19 @@ export default function Studio() {
     ro.observe(stage);
     return () => ro.disconnect();
   }, [step, formatMeta.id]);
+
+  useEffect(() => {
+    if (!sendingMessage) {
+      setThinkingPhrase(THINKING_PHRASES[0]);
+      return;
+    }
+    let i = 0;
+    const id = window.setInterval(() => {
+      i = (i + 1) % THINKING_PHRASES.length;
+      setThinkingPhrase(THINKING_PHRASES[i]);
+    }, 1700);
+    return () => window.clearInterval(id);
+  }, [sendingMessage]);
 
   async function startFromBrief(text: string, _visual: string, format: FormatId) {
     setBrief(text);
@@ -397,10 +415,7 @@ export default function Studio() {
         <HeroBackground isLight={isLight} />
         <div className={styles.topbar}>
           <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
-            <span>Strategy</span>
-            <span style={{ color: "var(--ink-tertiary)" }}>
-              Brand <em>OS</em>
-            </span>
+            <img src="/brand/strategy-wordmark.svg" alt="Strategy Brand OS" height={27} style={{ height: 27, width: "auto" }} />
           </div>
           <div className={styles.headerRight}>
             <ThemeToggleBtn isLight={isLight} onToggle={toggleContentTheme} />
@@ -424,10 +439,7 @@ export default function Studio() {
       <HeroBackground isLight={isLight} />
       <div className={styles.topbar}>
         <div className={styles.brand} onClick={() => setStep("brief")} style={{ cursor: "pointer" }}>
-          <span>Strategy</span>
-          <span style={{ color: "var(--ink-tertiary)" }}>
-            Brand <em>OS</em>
-          </span>
+          <img src="/brand/strategy-wordmark.svg" alt="Strategy Brand OS" height={27} style={{ height: 27, width: "auto" }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button type="button" className={styles.btnGhostSm} onClick={() => setLeftOpen((v) => !v)}>
@@ -442,8 +454,8 @@ export default function Studio() {
           <button type="button" className={styles.btnGhostSm} onClick={() => setRightOpen((v) => !v)}>
             ⋮
           </button>
-          <button type="button" className={styles.btnPrimary} onClick={exportPng}>
-            ⬇ Export
+          <button type="button" className={styles.btnSecondary} onClick={exportPng}>
+            <DownloadIcon /> Export
           </button>
         </div>
       </div>
@@ -511,15 +523,21 @@ export default function Studio() {
               </div>
             </div>
           </div>
-          <div className={styles.sideMenuFooter}>💡 Design tips appear here</div>
         </div>
 
         <div className={`${styles.stage} ${design.format === "docs" ? styles.stageDoc : ""}`} ref={stageRef}>
           {design.format === "docs" ? (
-            <DocsFrame frameRef={frameRef} design={design} width={docsWidth} commit={commit} />
+            <div className={`${styles.docsFrameWrap} ${sendingMessage ? styles.frameLoading : ""}`}>
+              <DocsFrame frameRef={frameRef} design={design} width={docsWidth} commit={commit} />
+              {sendingMessage && (
+                <div className={styles.frameLoadingOverlay}>
+                  <div className={styles.frameLoadingSpinner} />
+                </div>
+              )}
+            </div>
           ) : (
             <div
-              className={styles.frameScaleWrap}
+              className={`${styles.frameScaleWrap} ${sendingMessage ? styles.frameLoading : ""}`}
               style={{ width: frameSize.width * scale, height: frameSize.height * scale }}
             >
             <div
@@ -640,6 +658,11 @@ export default function Studio() {
                 </span>
               </div>
             </div>
+            {sendingMessage && (
+              <div className={styles.frameLoadingOverlay}>
+                <div className={styles.frameLoadingSpinner} />
+              </div>
+            )}
             </div>
           )}
         </div>
@@ -715,7 +738,7 @@ export default function Studio() {
             <AttachIcon />
           </button>
           <textarea
-            placeholder={sendingMessage ? "Thinking…" : "Ask for any change: copy, layout, theme, or an image"}
+            placeholder={sendingMessage ? thinkingPhrase : "Ask for any change: copy, layout, theme, or an image"}
             value={message}
             disabled={sendingMessage}
             onChange={(e) => setMessage(e.target.value)}
@@ -920,6 +943,14 @@ function DocsFrame({
         </div>
       </div>
     </div>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 -960 960 960" fill="currentColor">
+      <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
+    </svg>
   );
 }
 

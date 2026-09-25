@@ -38,10 +38,7 @@ export default function CreateScreen({
 
       <header className={styles.header}>
         <div className={styles.brand}>
-          <span className={styles.brandName}>Strategy</span>
-          <span className={styles.brandProduct}>
-            Brand <em>OS</em>
-          </span>
+          <img src="/brand/strategy-wordmark.svg" alt="Strategy Brand OS" height={27} style={{ height: 27, width: "auto" }} />
         </div>
         <div className={styles.headerRight}>
           <button

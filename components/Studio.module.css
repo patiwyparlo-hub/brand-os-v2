@@ -466,6 +466,40 @@
   position: relative;
 }
 
+.docsFrameWrap {
+  position: relative;
+}
+
+.frameLoading .frame,
+.frameLoading > :first-child {
+  filter: brightness(0.55) saturate(0.85);
+}
+
+.frameLoadingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.frameLoadingSpinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.22);
+  border-top-color: #ffffff;
+  animation: frameSpin 0.8s linear infinite;
+}
+
+@keyframes frameSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .frame {
   /* Absolutely positioned within .frameScaleWrap so its true (untransformed)
      layout size never expands the wrapper — only the scaled-down visual
@@ -484,7 +518,7 @@
      (a long-standing flexbug), which made this pad tighter there and
      starved the content area enough to clip text. */
   padding: calc(7 * var(--cqmin));
-  transition: width var(--dur-base) var(--ease-out), height var(--dur-base) var(--ease-out);
+  transition: width var(--dur-base) var(--ease-out), height var(--dur-base) var(--ease-out), filter var(--dur-base) var(--ease-out);
 }
 
 .frameThemeWhite { background: #ffffff; }
@@ -738,6 +772,22 @@
   transition: all var(--dur-fast) var(--ease-out);
 }
 .btnPrimary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+.btnSecondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10.5px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.btnSecondary:hover { background: var(--accent-muted); border-color: var(--accent-hover); color: var(--accent-hover); transform: translateY(-1px); }
 
 .btnGhostSm {
   background: var(--glass-bg);
