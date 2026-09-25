@@ -91,6 +91,11 @@
   flex-wrap: wrap;
 }
 
+.topbarRow:not(:last-child) {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-line-faint);
+}
+
 .brand {
   display: flex;
   align-items: baseline;
