@@ -375,6 +375,24 @@
   cursor: default;
 }
 
+.resetBtn {
+  margin-top: auto;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.resetBtn:hover { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.6); color: #f87171; }
+
 .chatHistoryChevron {
   margin-left: auto;
   color: var(--ink-tertiary);

@@ -740,7 +740,7 @@ export default function Studio() {
                 </div>
               )}
             </div>
-            <button type="button" className={styles.sideMenuButton} onClick={() => setConfirmAction({ kind: "reset" })}>
+            <button type="button" className={styles.resetBtn} onClick={() => setConfirmAction({ kind: "reset" })}>
               Reset Design
             </button>
           </div>
