@@ -443,7 +443,7 @@ export default function Studio() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button type="button" className={styles.btnGhostSm} onClick={() => setLeftOpen((v) => !v)}>
-            ⚙ Design
+            <EditIcon /> Design
           </button>
           <span style={{ fontSize: 12.5, color: "var(--ink-faint)" }}>
             {formatMeta.name} · {formatMeta.ratio}
@@ -752,12 +752,12 @@ export default function Studio() {
           />
           <button
             type="button"
-            className={`${styles.composerBtn} ${styles.sendBtn}`}
+            className={`${styles.composerBtn} ${styles.sendBtn} ${sendingMessage ? styles.sending : ""}`}
             title="Send"
             onClick={sendMessage}
             disabled={sendingMessage || !message.trim()}
           >
-            {sendingMessage ? "…" : "↑"}
+            {sendingMessage ? <span className={styles.sendBtnSpinner} /> : "↑"}
           </button>
         </div>
         <div className={styles.composerHint}>One change at a time gets the sharpest results.</div>
@@ -943,6 +943,14 @@ function DocsFrame({
         </div>
       </div>
     </div>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 -960 960 960" fill="currentColor">
+      <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+    </svg>
   );
 }
 

@@ -745,6 +745,16 @@
 .sendBtn:hover { background: var(--accent-hover); color: #0a0a0b; }
 .sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 .sendBtn:disabled:hover { background: var(--accent); }
+.sendBtn.sending:disabled { opacity: 1; cursor: default; }
+
+.sendBtnSpinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(10, 10, 11, 0.25);
+  border-top-color: #0a0a0b;
+  animation: frameSpin 0.8s linear infinite;
+}
 
 .composerHint {
   width: 100%;
@@ -776,15 +786,15 @@
 .btnSecondary {
   background: transparent;
   color: var(--accent);
-  border: 1.5px solid var(--accent);
+  border: 1px solid var(--accent);
   font-weight: 600;
-  font-size: 14px;
-  padding: 10.5px 22px;
-  border-radius: 10px;
+  font-size: 13px;
+  padding: 9px 16px;
+  border-radius: 7px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   transition: all var(--dur-fast) var(--ease-out);
 }
 .btnSecondary:hover { background: var(--accent-muted); border-color: var(--accent-hover); color: var(--accent-hover); transform: translateY(-1px); }
