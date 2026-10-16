@@ -45,6 +45,7 @@ npm run lint
 
 ## Conventions
 
+- Language: all documentation, GitHub issues, PRs, issue/PR comments, commit messages and code comments are written in English.
 - Branch per change: `issue-<n>-<short-slug>` for issue work; `/issue-to-pr <n>` automates the flow.
 - Commit messages: short imperative subject in English, like the existing history ("Make Recent list live and shorten CTA to \"Generate\"").
 - Don't push straight to `main` unless asked — it goes to production.
